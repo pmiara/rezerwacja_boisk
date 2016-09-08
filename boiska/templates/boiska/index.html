@@ -1,4 +1,11 @@
 {% extends 'boiska/base.html' %}
 {% block content %}
-<p>Strona główna</p>
+    <p>Strona główna</p>
+    <ul>
+        {% for place in places %}
+            <li>
+                <h3>{{ place.name }}</h3>
+            </li>
+        {% endfor %}
+    </ul>
 {% endblock content %}
