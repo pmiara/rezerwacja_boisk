@@ -4,7 +4,11 @@
     <ul>
         {% for place in places %}
             <li>
-                <h3>{{ place.name }}</h3>
+                <h3>
+                    <a href="{% url 'boiska:place' place.name %}">
+                        {{ place.name }}
+                    </a>
+                </h3>
             </li>
         {% endfor %}
     </ul>
