@@ -1,0 +1,11 @@
+{% extends 'boiska/base.html' %}
+{% block content %}
+    <h3>{{ name }}</h3>
+    <p>{{ description }}</p>
+    <br />
+    <h4>Dane kontaktowe:</h4>
+    <ul>
+        <li>{{ street }}, {{ city }}</li>
+        <li>{{ phone_number }}</li>
+    </ul>
+{% endblock content %}

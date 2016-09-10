@@ -5,7 +5,7 @@ from django.db import models
 class Administrator(models.Model):
     """
     Administrator of a Place.
-    Administrator can perform following actions:
+    TODO: Administrator can perform following actions:
     ...
     """
     name = models.CharField(max_length=40, primary_key=True)
