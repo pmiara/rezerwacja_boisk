@@ -8,4 +8,14 @@
         <li>{{ street }}, {{ city }}</li>
         <li>{{ phone_number }}</li>
     </ul>
+    <h4>Dostępność boisk</h4>
+    <table>
+        {% for week in calendar %}
+        <tr>
+            {% for day in week %}
+            <td class="day_color_{{ day.2 }}">{{ day.0 }}</td>
+            {% endfor %}
+        </tr>
+        {% endfor %}
+    </table>
 {% endblock content %}
