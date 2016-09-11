@@ -13,7 +13,7 @@ class Administrator(models.Model):
 
 class Place(models.Model):
     """
-    Place is a location with pitches/courts. Administrator is a person
+    Place is a location with sports grounds. Administrator is a person
     who can edit info about a Place and manage registrations.
     """
     name = models.CharField(max_length=40, primary_key=True)

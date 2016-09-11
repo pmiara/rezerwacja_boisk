@@ -17,7 +17,7 @@ def index(request):
 def place(request, place_name):
     """
     Description of a place.
-    TODO: Calendar showing availability of pitches/courts.
+    TODO: Calendar showing availability of sports grounds.
     """
     place_obj = get_object_or_404(Place, name=place_name)
     now = datetime.now()
@@ -39,7 +39,7 @@ def availability_calendar(year, month, place_obj):
     (month_day, week_day, availability).
     TODO: Availability values:
      - 0 -> almost every hour is available
-     - 1 -> a pitch/court is quite busy
+     - 1 -> a sports ground is quite busy
      - 2 -> very busy
     """
     result = []
@@ -54,6 +54,6 @@ def availability_calendar(year, month, place_obj):
 
 def check_availability(year, month, day, place_obj):
     """
-    TODO: Check availability of place's courts on a particuar day.
+    TODO: Check availability of place's sports grounds on a particuar day.
     """
     return randint(0,2)
