@@ -72,9 +72,10 @@ def place_day(request, place_name, date):
     """
     day, month, year = date.split('-')
     place_obj = get_object_or_404(Place, name=place_name)
+    sports_grounds = place_obj.sports_grounds.all().order_by('id')
     context = {
         'name': place_name,
         'date': date,
+        'sports_grounds': sports_grounds,
     }
     return render(request, 'boiska/place_day.html', context)
-    

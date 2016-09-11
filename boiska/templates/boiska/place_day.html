@@ -5,4 +5,13 @@
     </a>
     <br />
     <h4>Dostępność boisk w dniu {{ date }}</h4>
+    {% for sports_ground in sports_grounds %}
+    <div>
+        <h5>{{ sports_ground }}</h5>
+        <p>
+            {{ sports_ground.opening_time|time:"H:i" }} - 
+            {{ sports_ground.closing_time|time:"H:i" }}
+        </p>
+    </div>
+    {% endfor %}
 {% endblock content %}
