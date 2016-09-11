@@ -13,7 +13,21 @@
         {% for week in calendar %}
         <tr>
             {% for day in week %}
-            <td class="day_color_{{ day.2 }}">{{ day.0 }}</td>
+            {% comment "Optional note" %}
+            day.0 - month_day
+            day.1 - week_day
+            day.2 - date
+            day.3 - availability
+            {% endcomment %}
+            {% if day.0 %}
+            <td class="day_color_{{ day.3 }}">
+                <a href="{% url 'boiska:place_day' name day.2 %}">
+                    {{ day.0 }}
+                </a>
+            </td>
+            {% else %}
+            <td class="blank_day"></td>
+            {% endif %}
             {% endfor %}
         </tr>
         {% endfor %}

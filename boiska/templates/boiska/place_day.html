@@ -1,0 +1,8 @@
+{% extends 'boiska/base.html' %}
+{% block content %}
+    <a href="{% url 'boiska:place' name %}">
+        <h3>{{ name }}</h3>
+    </a>
+    <br />
+    <h4>Dostępność boisk w dniu {{ date }}</h4>
+{% endblock content %}
