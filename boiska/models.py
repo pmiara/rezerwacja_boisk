@@ -50,12 +50,12 @@ class SportsGround(models.Model):
     local_id = models.PositiveIntegerField(blank=True, default=None)
     opening_time = models.TimeField()
     closing_time = models.TimeField()
-    start_season_date = models.DateTimeField(
+    start_season_date = models.DateField(
         blank=True,
         null=True,
         default=None
     )
-    end_season_date = models.DateTimeField(
+    end_season_date = models.DateField(
         blank=True,
         null=True,
         default=None
@@ -82,3 +82,25 @@ def get_local_id(place):
         return present_id[0] + 1
     else:
         return 1
+
+
+class Reservation(models.Model):
+    """
+    Reservation of a specific SportsGround.
+    """
+    sports_ground = models.ForeignKey(
+        SportsGround,
+        on_delete=models.CASCADE,
+        related_name='reservations'
+    )
+    email = models.EmailField()
+    surname = models.CharField(max_length=40)
+    event_date = models.DateField()
+    start_time = models.TimeField()
+    end_time = models.TimeField()
+    is_accepted = models.BooleanField(blank=True, default=False)
+    
+    def __str__(self):
+        event_time = str(self.start_time) + ' - ' + str(self.end_time)
+        when = str(self.event_date) + ' ' + event_time
+        return str(self.sports_ground) + ', ' + when
