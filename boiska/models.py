@@ -35,24 +35,43 @@ class SportsGround(models.Model):
     SportsGround is a pitch/court which belongs to a Place and can have
     reservations attached to it.
     SportsGround can be closed for some time, for example during
-    a winter.
+    the winter.
     """
     place = models.ForeignKey(
         Place,
         on_delete=models.CASCADE,
         related_name='sports_grounds'
     )
-    local_id = models.PositiveIntegerField(blank=True)
+    name_prefix = models.CharField(
+        max_length=30,
+        default='Boisko nr',
+        blank=True
+    )
+    local_id = models.PositiveIntegerField(blank=True, default=None)
     opening_time = models.TimeField()
     closing_time = models.TimeField()
-    start_season_date = models.DateTimeField(blank=True)
-    end_season_date = models.DateTimeField(blank=True)
+    start_season_date = models.DateTimeField(
+        blank=True,
+        null=True,
+        default=None
+    )
+    end_season_date = models.DateTimeField(
+        blank=True,
+        null=True,
+        default=None
+    )
+    
+    def local_name(self):
+        return self.name_prefix + ' ' + str(self.local_id)
     
     def __str__(self):
-        return "Boisko nr " + str(self.local_id)
+        result = self.name_prefix + ' '
+        result += str(self.local_id) + ', ' + self.place.name
+        return result
     
     def save(self, *args, **kwargs):
-        self.local_id = get_local_id(self.place)
+        if self.local_id is None:
+            self.local_id = get_local_id(self.place)
         super(SportsGround, self).save(*args, **kwargs)
 
 
