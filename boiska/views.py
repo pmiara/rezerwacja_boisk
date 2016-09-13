@@ -1,6 +1,6 @@
 from django.shortcuts import render, get_object_or_404
 from calendar import Calendar
-from datetime import datetime
+import datetime
 
 from .models import Place
 
@@ -20,7 +20,7 @@ def place(request, place_name):
     TODO: Calendar showing availability of sports grounds.
     """
     place_obj = get_object_or_404(Place, name=place_name)
-    now = datetime.now()
+    now = datetime.datetime.now()
     my_calendar = availability_calendar(now.year, now.month, place_obj)
     context = {
         'name': place_name,
@@ -65,17 +65,16 @@ def check_availability(year, month, day, place_obj):
     """
     return randint(0,2)
 
-def place_day(request, place_name, date):
+def place_day(request, place_name, my_date):
     """
     Show reservations of sports grounds on a particular day.
-    Date is in format: d-m-yyyy.
+    my_date is in format: d-m-yyyy.
     """
-    day, month, year = date.split('-')
     place_obj = get_object_or_404(Place, name=place_name)
-    sports_grounds = place_obj.sports_grounds.all().order_by('id')
+    sports_grounds = place_obj.sports_grounds.all().order_by('local_id')
     context = {
         'name': place_name,
-        'date': date,
+        'date': my_date,
         'sports_grounds': sports_grounds,
     }
     return render(request, 'boiska/place_day.html', context)

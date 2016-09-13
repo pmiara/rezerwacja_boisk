@@ -13,7 +13,8 @@
             {{ sports_ground.opening_time|time:"H:i" }} - 
             {{ sports_ground.closing_time|time:"H:i" }}
         </p>
-        {% for reservation in sports_ground.reservations.all|sort_by:'start_time' %}
+        {% with reservations=sports_ground.reservations|filter_day:date %}
+        {% for reservation in reservations|sort_by:'start_time' %}
         {% if reservation.is_accepted %}
         <div class="reserved">
             {{ reservation.surname }}, 
@@ -22,6 +23,7 @@
         </div>
         {% endif %}
         {% endfor %}
+        {% endwith %}
     </div>
     {% endfor %}
 {% endblock content %}
