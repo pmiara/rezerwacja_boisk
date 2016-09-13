@@ -6,6 +6,9 @@
     </a>
     <br />
     <h4>Dostępność boisk w dniu {{ date }}</h4>
+    {% if message %}
+    <p>{{ message }}</p>
+    {% endif %}
     {% for sports_ground in sports_grounds %}
     <div>
         <h5>{{ sports_ground.local_name }}</h5>
@@ -24,6 +27,15 @@
         {% endif %}
         {% endfor %}
         {% endwith %}
+        {% if reservation_form %}
+        <form method="POST" id="reservation_form">
+        {% csrf_token %}
+            {{ reservation_form.as_p }}
+            <input name="local_id" value="{{ sports_ground.local_id }}" type="hidden">
+            <input name="name_prefix" value="{{ sports_ground.name_prefix }}" type="hidden">
+            <button type="submit">Zarezerwuj</button>
+        </form>
+        {% endif %}
     </div>
     {% endfor %}
 {% endblock content %}

@@ -3,6 +3,7 @@ from calendar import Calendar
 import datetime
 
 from .models import Place
+from .forms import ReservationForm
 
 from random import randint
 
@@ -76,5 +77,31 @@ def place_day(request, place_name, my_date):
         'name': place_name,
         'date': my_date,
         'sports_grounds': sports_grounds,
+        'message': None,
+        'reservation_form': None,
     }
+    if request.method == 'POST':
+        reservation_form = ReservationForm(data=request.POST)
+        if reservation_form.is_valid():
+            reservation = reservation_form.save(commit=False)
+            date_strptime = datetime.datetime.strptime(
+                my_date,
+                "%d-%m-%Y"
+            )
+            date_obj = date_strptime.date()
+            reservation.event_date = date_obj
+            name_prefix = request.POST['name_prefix']
+            local_id = request.POST['local_id']
+            sports_ground = sports_grounds.get(
+                name_prefix=name_prefix,
+                local_id=local_id
+            )
+            reservation.sports_ground = sports_ground
+            reservation.save()
+            context['message'] = "Twoja rezerwacja czeka na akceptację."
+        else:
+            context['message'] = "Wystąpił błąd w procesie rezerwacji."
+    else:
+        reservation_form = ReservationForm()
+        context['reservation_form'] = reservation_form
     return render(request, 'boiska/place_day.html', context)

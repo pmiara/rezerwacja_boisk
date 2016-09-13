@@ -61,6 +61,9 @@ class SportsGround(models.Model):
         default=None
     )
     
+    class Meta:
+        unique_together = ('name_prefix', 'local_id')
+    
     def local_name(self):
         return self.name_prefix + ' ' + str(self.local_id)
     
@@ -76,6 +79,9 @@ class SportsGround(models.Model):
 
 
 def get_local_id(place):
+    """
+    This function is used when a SportsGround instance is being saved.
+    """
     sports_grounds = place.sports_grounds.all().order_by('-local_id')
     present_id = sports_grounds.values_list('local_id', flat=True)
     if present_id:
@@ -87,6 +93,8 @@ def get_local_id(place):
 class Reservation(models.Model):
     """
     Reservation of a specific SportsGround.
+    Email, surname, start_time, end_time are required.
+    Event_date and is_accepted fields are set automatically.
     """
     sports_ground = models.ForeignKey(
         SportsGround,
