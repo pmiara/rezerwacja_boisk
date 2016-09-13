@@ -1,4 +1,5 @@
 {% extends 'boiska/base.html' %}
+{% load custom_tags %}
 {% block content %}
     <a href="{% url 'boiska:place' name %}">
         <h3>{{ name }}</h3>
@@ -12,6 +13,15 @@
             {{ sports_ground.opening_time|time:"H:i" }} - 
             {{ sports_ground.closing_time|time:"H:i" }}
         </p>
+        {% for reservation in sports_ground.reservations.all|sort_by:'start_time' %}
+        {% if reservation.is_accepted %}
+        <div class="reserved">
+            {{ reservation.surname }}, 
+            {{ reservation.start_time|time:'H:i' }} -  
+            {{ reservation.end_time|time:'H:i' }}
+        </div>
+        {% endif %}
+        {% endfor %}
     </div>
     {% endfor %}
 {% endblock content %}
