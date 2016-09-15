@@ -20,7 +20,7 @@
         {% for reservation in reservations|sort_by:'start_time' %}
         {% if reservation.is_accepted %}
         <div class="reserved">
-            {{ reservation.surname }}, 
+            {{ reservation.surname }}, {{ reservation.email }}, 
             {{ reservation.start_time|time:'H:i' }} -  
             {{ reservation.end_time|time:'H:i' }}
         </div>
