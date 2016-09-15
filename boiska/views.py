@@ -5,7 +5,7 @@ import datetime
 from .models import Place
 from .forms import ReservationForm
 
-from random import randint
+import datetime
 
 def index(request):
     """
@@ -51,7 +51,10 @@ def availability_calendar(year, month, place_obj):
         # create a list for a new week
         if day[1] == 0:
             my_calendar.append([])
-        availability = check_availability(year, month, day, place_obj)
+        if day[0] == 0:
+            availability = 0
+        else:
+            availability = check_availability(year, month, day[0], place_obj)
         my_calendar[-1].append((
             day[0],                            # month_day
             day[1],                            # week_day
@@ -62,9 +65,26 @@ def availability_calendar(year, month, place_obj):
 
 def check_availability(year, month, day, place_obj):
     """
-    TODO: Check availability of place's sports grounds on a particuar day.
+    Check availability of place's sports grounds on a particuar day.
     """
-    return randint(0,2)
+    event_date = datetime.date(year, month, day)
+    time_sum = datetime.timedelta()
+    total = datetime.timedelta()
+    today = datetime.date.today()
+    for sports_ground in place_obj.sports_grounds.all():
+        reservations = sports_ground.reservations.filter(event_date=event_date)
+        for reservation in reservations:
+            time_sum += (datetime.datetime.combine(today, reservation.end_time)
+                - datetime.datetime.combine(today, reservation.start_time))
+        total += (datetime.datetime.combine(today, sports_ground.closing_time)
+            - datetime.datetime.combine(today, sports_ground.opening_time))
+    result = time_sum / total
+    if result > 0.6:
+        return 2
+    elif result > 0.4:
+        return 1
+    else:
+        return 0
 
 def place_day(request, place_name, my_date):
     """
