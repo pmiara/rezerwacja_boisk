@@ -3,7 +3,7 @@ from calendar import Calendar
 import datetime
 
 from .models import Place
-from .forms import ReservationForm
+from .forms import ReservationForm, EditReservationsForm
 
 import datetime
 
@@ -80,7 +80,10 @@ def check_availability(year, month, day, place_obj):
     total = datetime.timedelta()
     today = datetime.date.today()
     for sports_ground in place_obj.sports_grounds.all():
-        reservations = sports_ground.reservations.filter(event_date=event_date)
+        reservations = sports_ground.reservations.filter(
+            event_date=event_date,
+            is_accepted=True
+        )
         for reservation in reservations:
             time_sum += (datetime.datetime.combine(today, reservation.end_time)
                 - datetime.datetime.combine(today, reservation.start_time))
@@ -133,3 +136,21 @@ def place_day(request, place_name, my_date):
         reservation_form = ReservationForm()
         context['reservation_form'] = reservation_form
     return render(request, 'boiska/place_day.html', context)
+
+def place_admin(request, place_name):
+    """
+    Administrative panel for a Place administrator.
+    """
+    place_obj = get_object_or_404(Place, name=place_name)
+    sports_grounds = place_obj.sports_grounds.all()
+    not_accepted = []
+    for sports_ground in sports_grounds:
+        for reservation in sports_ground.reservations.filter(is_accepted=False):
+            not_accepted.append(reservation)
+    edit_reservations_form = EditReservationsForm(place_obj)
+    context = {
+        'place_name': place_name,
+        'reservations_not_accepted': not_accepted,
+        'edit_reservations_form': edit_reservations_form,
+    }
+    return render(request, 'boiska/place_admin.html', context)

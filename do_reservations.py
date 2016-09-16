@@ -91,7 +91,7 @@ def main():
 
 def choose_duration(start_time):
     # the later the bigger chance for success
-    if random.random() < start_time.hour / 24:
+    if random.random() > start_time.hour / 24:
         return None
     reservation_time = datetime.timedelta(hours=1)
     if random.random() < 0.50:
@@ -111,7 +111,7 @@ def do_reservation(event_date, start_time, duration, sports_ground):
         'start_time': start_time,
         'end_time': end_time,
         'sports_ground': sports_ground,
-        'is_accepted': True
+        'is_accepted': True,
     }
     reservation = Reservation.objects.create(**context)
     reservation.save()

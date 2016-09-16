@@ -108,6 +108,13 @@ class Reservation(models.Model):
     end_time = models.TimeField()
     is_accepted = models.BooleanField(blank=True, default=False)
     
+    ACCEPT = 1
+    REMOVE = 2
+    ACTIONS_CHOICES = (
+        (ACCEPT, 'Accept selected reservations.'),
+        (REMOVE, 'Delete selected reservations.'),
+    )
+    
     def __str__(self):
         event_time = str(self.start_time) + ' - ' + str(self.end_time)
         when = str(self.event_date) + ' ' + event_time
