@@ -1,0 +1,23 @@
+* {
+    box-sizing: border-box;
+}
+
+a {
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+.day_color_0 a {
+    color: green;
+}
+
+.day_color_1 a {
+    color: orange;
+}
+
+.day_color_2 a {
+    color: red;
+}

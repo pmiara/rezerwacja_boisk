@@ -18,7 +18,7 @@ def index(request):
 def place(request, place_name):
     """
     Description of a place.
-    TODO: Calendar showing availability of sports grounds.
+    Calendar showing availability of sports grounds.
     """
     place_obj = get_object_or_404(Place, name=place_name)
     now = datetime.datetime.now()
@@ -40,10 +40,10 @@ def availability_calendar(year, month, place_obj):
     Availability calendar returns a list of week lists.
     Each week list contains tuples in format:
     (month_day, week_day, date, availability).
-    TODO: Availability values:
-     - 0 -> almost every hour is available
-     - 1 -> a sports ground is quite busy
-     - 2 -> very busy
+    Availability values:
+     - 0: almost every hour is available
+     - 1: a sports ground is quite busy
+     - 2: very busy
     """
     month_year = str(month) + '-' + str(year)
     my_calendar = []
@@ -66,6 +66,14 @@ def availability_calendar(year, month, place_obj):
 def check_availability(year, month, day, place_obj):
     """
     Check availability of place's sports grounds on a particuar day.
+    This function counts hours when sports grounds are busy - time_sum -
+    and hours when sports grounds are open - total.
+    Result of calculations is a value between 0 and 1, where 0 means
+    there are no reservations and 1 every hour is reserved.
+    Return values:
+     - 0: 0.3 >= result >= 0
+     - 1: 0.6 >= result > 0.3
+     - 2: 1 >= result > 0.6
     """
     event_date = datetime.date(year, month, day)
     time_sum = datetime.timedelta()
@@ -81,7 +89,7 @@ def check_availability(year, month, day, place_obj):
     result = time_sum / total
     if result > 0.6:
         return 2
-    elif result > 0.4:
+    elif result > 0.3:
         return 1
     else:
         return 0
