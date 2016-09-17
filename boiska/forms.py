@@ -8,6 +8,10 @@ class ReservationForm(forms.ModelForm):
         fields = ('email', 'surname', 'start_time', 'end_time')
 
 class EditReservationsForm(forms.Form):
+    action = forms.ChoiceField(
+        choices=Reservation.ACTION_CHOICES,
+        widget=forms.Select()
+    )
     def __init__(self, place, *args, **kwargs):
         super(EditReservationsForm, self).__init__(*args, **kwargs)
         reservations = Reservation.objects.filter(

@@ -109,10 +109,10 @@ class Reservation(models.Model):
     is_accepted = models.BooleanField(blank=True, default=False)
     
     ACCEPT = 1
-    REMOVE = 2
-    ACTIONS_CHOICES = (
-        (ACCEPT, 'Accept selected reservations.'),
-        (REMOVE, 'Delete selected reservations.'),
+    DELETE = 2
+    ACTION_CHOICES = (
+        (ACCEPT, 'Accept selected reservations'),
+        (DELETE, 'Delete selected reservations'),
     )
     
     def __str__(self):

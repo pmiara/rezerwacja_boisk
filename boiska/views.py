@@ -2,7 +2,7 @@ from django.shortcuts import render, get_object_or_404
 from calendar import Calendar
 import datetime
 
-from .models import Place
+from .models import Place, Reservation
 from .forms import ReservationForm, EditReservationsForm
 
 import datetime
@@ -143,6 +143,21 @@ def place_admin(request, place_name):
     """
     place_obj = get_object_or_404(Place, name=place_name)
     sports_grounds = place_obj.sports_grounds.all()
+    if request.method == 'POST':
+        edit_reservations_form = EditReservationsForm(place_obj, data=request.POST)
+        if edit_reservations_form.is_valid():
+            reservations_ids = request.POST.getlist('reservations')
+            reservations = Reservation.objects.filter(
+                sports_ground__in=sports_grounds,
+                id__in=reservations_ids
+            )
+            action = int(request.POST['action'])
+            for reservation in reservations:
+                if action == Reservation.ACCEPT:
+                    reservation.is_accepted = True
+                    reservation.save()
+                elif action == Reservation.DELETE:
+                    reservation.delete()
     not_accepted = []
     for sports_ground in sports_grounds:
         for reservation in sports_ground.reservations.filter(is_accepted=False):

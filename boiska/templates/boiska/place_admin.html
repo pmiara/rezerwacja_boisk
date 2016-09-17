@@ -3,16 +3,9 @@
     <h3>{{ place_name }}</h3>
     <br />
     <h4>Rezerwacje do zaakceptowania</h4>
-    <ul>
-    {% for reservation in reservations_not_accepted %}
-        <li>
-            {{ reservation.surname }}, {{ reservation.email }}, 
-            {{ reservation.start_time|time:'H:i' }} -  
-            {{ reservation.end_time|time:'H:i' }}
-        </li>
-    {% endfor %}
-    </ul>
     <form method="POST">
+        {% csrf_token %}
+        <button type="submit">Go</button>
         {{ edit_reservations_form.as_p }}
     </form>
 {% endblock content %}
