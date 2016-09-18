@@ -52,7 +52,7 @@ class SportsGround(models.Model):
     )
     
     class Meta:
-        unique_together = ('name_prefix', 'local_id')
+        unique_together = ('place', 'name_prefix', 'local_id')
     
     def local_name(self):
         return self.name_prefix + ' ' + str(self.local_id)
@@ -64,15 +64,15 @@ class SportsGround(models.Model):
     
     def save(self, *args, **kwargs):
         if self.local_id is None:
-            self.local_id = get_local_id(self.place)
+            self.local_id = get_local_id(self.place, self.name_prefix)
         super(SportsGround, self).save(*args, **kwargs)
 
 
-def get_local_id(place):
+def get_local_id(place, name_prefix):
     """
     This function is used when a SportsGround instance is being saved.
     """
-    sports_grounds = place.sports_grounds.all().order_by('-local_id')
+    sports_grounds = place.sports_grounds.filter(name_prefix=name_prefix).order_by('-local_id')
     present_id = sports_grounds.values_list('local_id', flat=True)
     if present_id:
         return present_id[0] + 1
