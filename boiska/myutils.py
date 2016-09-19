@@ -68,6 +68,13 @@ def check_availability(year, month, day, place_obj):
         return 0
 
 def reservation_overlap(reservation):
+    """
+    Check if a reservation can be accepted. If addition of a new reservation
+    causes an overlap, it can't be aaccepted.
+    Return values:
+     - True: there is an overlap
+     - False: there isn't
+    """
     event_date = reservation.event_date
     accepted_reservations = Reservation.objects.filter(
         event_date=event_date,

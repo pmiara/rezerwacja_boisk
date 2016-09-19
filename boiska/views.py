@@ -5,7 +5,6 @@ from .models import Place, Reservation
 from .forms import ReservationForm, EditReservationsForm
 from .myutils import availability_calendar, check_availability, reservation_overlap 
 
-import datetime
 
 def index(request):
     """
@@ -78,6 +77,9 @@ def place_day(request, place_name, my_date):
 def place_admin(request, place_name):
     """
     Administrative panel for a Place administrator.
+    Administrator of a Place can do following actions:
+     - accept reservations
+     - delete not_accepted reservations
     """
     place_obj = get_object_or_404(Place, name=place_name)
     sports_grounds = place_obj.sports_grounds.all()
