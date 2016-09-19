@@ -81,16 +81,3 @@ def reservation_overlap(reservation):
         if start_a < end_b and start_b < end_a:
             return True
     return False
-
-def get_local_id(place, name_prefix):
-    """
-    This function is used when a SportsGround instance is being saved.
-    """
-    sports_grounds = place.sports_grounds.filter(
-        name_prefix=name_prefix
-    ).order_by('-local_id')
-    present_id = sports_grounds.values_list('local_id', flat=True)
-    if present_id:
-        return present_id[0] + 1
-    else:
-        return 1

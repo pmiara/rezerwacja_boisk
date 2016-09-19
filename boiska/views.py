@@ -67,9 +67,9 @@ def place_day(request, place_name, my_date):
             )
             reservation.sports_ground = sports_ground
             reservation.save()
-            context['message'] = "Twoja rezerwacja czeka na akceptację."
+            context['message'] = 'Twoja rezerwacja czeka na akceptację.'
         else:
-            context['message'] = "Wystąpił błąd w procesie rezerwacji."
+            context['message'] = 'Wystąpił błąd w procesie rezerwacji.'
     else:
         reservation_form = ReservationForm()
         context['reservation_form'] = reservation_form
