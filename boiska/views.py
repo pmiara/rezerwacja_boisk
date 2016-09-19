@@ -85,10 +85,12 @@ def check_availability(year, month, day, place_obj):
             is_accepted=True
         )
         for reservation in reservations:
-            time_sum += (datetime.datetime.combine(today, reservation.end_time)
-                - datetime.datetime.combine(today, reservation.start_time))
-        total += (datetime.datetime.combine(today, sports_ground.closing_time)
-            - datetime.datetime.combine(today, sports_ground.opening_time))
+            start_time = datetime.datetime.combine(today, reservation.start_time)
+            end_time = datetime.datetime.combine(today, reservation.end_time)
+            time_sum += end_time - start_time
+        opening_time = datetime.datetime.combine(today, sports_ground.opening_time)
+        closing_time = datetime.datetime.combine(today, sports_ground.closing_time)
+        total += closing_time - opening_time
     result = time_sum / total
     if result > 0.6:
         return 2
@@ -143,6 +145,7 @@ def place_admin(request, place_name):
     """
     place_obj = get_object_or_404(Place, name=place_name)
     sports_grounds = place_obj.sports_grounds.all()
+    result_messages = []
     if request.method == 'POST':
         edit_reservations_form = EditReservationsForm(place_obj, data=request.POST)
         if edit_reservations_form.is_valid():
@@ -154,10 +157,20 @@ def place_admin(request, place_name):
             action = int(request.POST['action'])
             for reservation in reservations:
                 if action == Reservation.ACCEPT:
-                    reservation.is_accepted = True
-                    reservation.save()
+                    overlap = reservation_overlap(reservation)
+                    if overlap == False:
+                        reservation.is_accepted = True
+                        reservation.save()
+                        result_messages.append(
+                            'Zaakceptowano: ' + str(reservation)
+                        )
+                    else:
+                        result_messages.append(
+                            'Błędne godziny rezerwacji: ' + str(reservation)
+                        )
                 elif action == Reservation.DELETE:
                     reservation.delete()
+                    result_messages.append('Usunięto: ' + str(reservation))
     not_accepted = []
     for sports_ground in sports_grounds:
         for reservation in sports_ground.reservations.filter(is_accepted=False):
@@ -167,5 +180,21 @@ def place_admin(request, place_name):
         'place_name': place_name,
         'reservations_not_accepted': not_accepted,
         'edit_reservations_form': edit_reservations_form,
+        'result_messages': result_messages,
     }
     return render(request, 'boiska/place_admin.html', context)
+
+def reservation_overlap(reservation):
+    event_date = reservation.event_date
+    accepted_reservations = Reservation.objects.filter(
+        event_date=event_date,
+        is_accepted=True
+    )
+    for accepted_reservation in accepted_reservations:
+        start_a = accepted_reservation.start_time
+        end_a = accepted_reservation.end_time
+        start_b = reservation.start_time
+        end_b = reservation.end_time
+        if start_a < end_b and start_b < end_a:
+            return True
+    return False

@@ -3,9 +3,13 @@
     <h3>{{ place_name }}</h3>
     <br />
     <h4>Rezerwacje do zaakceptowania</h4>
+    {% for message in result_messages %}
+    <p>{{ message }}</p>
+    {% endfor %}
     <form method="POST">
         {% csrf_token %}
         <button type="submit">Go</button>
+        {{ edit_reservations_form.errors }}
         {{ edit_reservations_form.as_p }}
     </form>
 {% endblock content %}
