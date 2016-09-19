@@ -9,7 +9,6 @@
     <form method="POST">
         {% csrf_token %}
         <button type="submit">Go</button>
-        {{ edit_reservations_form.errors }}
         {{ edit_reservations_form.as_p }}
     </form>
 {% endblock content %}

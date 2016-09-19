@@ -7,9 +7,10 @@
     </a>
     <br />
     <h4>Dostępność boisk w dniu {{ date }}</h4>
-    {% if message %}
-    <p>{{ message }}</p>
+    {% if result_message %}
+    <p>{{ result_message }}</p>
     {% endif %}
+    {{ reservation_form.errors }}
     {% for sports_ground in sports_grounds %}
     <div>
         <h5>{{ sports_ground.local_name }}</h5>
@@ -19,17 +20,17 @@
         </p>
         {% with reservations=sports_ground.reservations|filter_day:date %}
         {% for reservation in reservations|sort_by:'start_time' %}
-        {% if reservation.is_accepted %}
+            {% if reservation.is_accepted %}
         <div class="reserved">
             {{ reservation.surname }}, {{ reservation.email }}, 
             {{ reservation.start_time|time:'H:i' }} -  
             {{ reservation.end_time|time:'H:i' }}
         </div>
-        {% endif %}
+            {% endif %}
         {% endfor %}
         {% endwith %}
-        {% if reservation_form %}
-        <form method="POST" id="reservation_form">
+        {% if display_form %}
+        <form method="POST" class="reservation_form">
         {% csrf_token %}
             {{ reservation_form.as_p }}
             <input name="local_id" value="{{ sports_ground.local_id }}" type="hidden">

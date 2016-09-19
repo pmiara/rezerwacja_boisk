@@ -38,40 +38,45 @@ def place_day(request, place_name, my_date):
     """
     Show reservations of sports grounds on a particular day.
     my_date is in format: d-m-yyyy.
+    User can do a reservation using ReservationForm. Date and sports_ground
+    fields are added automatically to the form after validation.
     """
     place_obj = get_object_or_404(Place, name=place_name)
-    sports_grounds = place_obj.sports_grounds.all().order_by('local_id')
+    sports_grounds = place_obj.sports_grounds.all()
     context = {
         'name': place_name,
         'date': my_date,
         'sports_grounds': sports_grounds,
-        'message': None,
+        'result_message': None,
         'reservation_form': None,
+        'display_form': True,
     }
     if request.method == 'POST':
         reservation_form = ReservationForm(data=request.POST)
+        date_strptime = datetime.datetime.strptime(my_date, "%d-%m-%Y")
+        date_obj = date_strptime.date()
+        name_prefix = request.POST['name_prefix']
+        local_id = request.POST['local_id']
+        sports_ground = sports_grounds.get(
+            name_prefix=name_prefix,
+            local_id=local_id
+        )
+        # sports_ground and event_date attributes are assigned twice
+        # firstly for validation and later in order to be saved
+        reservation_form.sports_ground = sports_ground
+        reservation_form.event_date = date_obj
         if reservation_form.is_valid():
             reservation = reservation_form.save(commit=False)
-            date_strptime = datetime.datetime.strptime(
-                my_date,
-                "%d-%m-%Y"
-            )
-            date_obj = date_strptime.date()
-            reservation.event_date = date_obj
-            name_prefix = request.POST['name_prefix']
-            local_id = request.POST['local_id']
-            sports_ground = sports_grounds.get(
-                name_prefix=name_prefix,
-                local_id=local_id
-            )
             reservation.sports_ground = sports_ground
+            reservation.event_date = date_obj
             reservation.save()
-            context['message'] = 'Twoja rezerwacja czeka na akceptację.'
+            context['display_form'] = False
+            context['result_message'] = 'Twoja rezerwacja czeka na akceptację.'
         else:
-            context['message'] = 'Wystąpił błąd w procesie rezerwacji.'
+            context['result_message'] = reservation_form.errors
     else:
         reservation_form = ReservationForm()
-        context['reservation_form'] = reservation_form
+    context['reservation_form'] = reservation_form
     return render(request, 'boiska/place_day.html', context)
 
 def place_admin(request, place_name):
@@ -104,7 +109,7 @@ def place_admin(request, place_name):
                         )
                     else:
                         result_messages.append(
-                            'Błędne godziny rezerwacji: ' + str(reservation)
+                            'Rezerwacja nachodzi na inną: ' + str(reservation)
                         )
                 elif action == Reservation.DELETE:
                     reservation.delete()

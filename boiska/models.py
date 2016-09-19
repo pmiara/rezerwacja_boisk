@@ -53,6 +53,7 @@ class SportsGround(models.Model):
     
     class Meta:
         unique_together = ('place', 'name_prefix', 'local_id')
+        ordering = ['name_prefix', 'local_id']
     
     def local_name(self):
         return self.name_prefix + ' ' + str(self.local_id)
