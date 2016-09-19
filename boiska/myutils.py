@@ -77,6 +77,7 @@ def reservation_overlap(reservation):
     """
     event_date = reservation.event_date
     accepted_reservations = Reservation.objects.filter(
+        sports_ground=reservation.sports_ground,
         event_date=event_date,
         is_accepted=True
     )

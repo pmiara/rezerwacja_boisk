@@ -52,7 +52,6 @@ def place_day(request, place_name, my_date):
         'display_form': True,
     }
     if request.method == 'POST':
-        reservation_form = ReservationForm(data=request.POST)
         date_strptime = datetime.datetime.strptime(my_date, "%d-%m-%Y")
         date_obj = date_strptime.date()
         name_prefix = request.POST['name_prefix']
@@ -61,11 +60,8 @@ def place_day(request, place_name, my_date):
             name_prefix=name_prefix,
             local_id=local_id
         )
-        # sports_ground and event_date attributes are assigned twice
-        # firstly for validation and later in order to be saved
-        reservation_form.sports_ground = sports_ground
-        reservation_form.event_date = date_obj
-        if reservation_form.is_valid():
+        reservation_form = ReservationForm(data=request.POST)
+        if reservation_form.is_valid(sports_ground):
             reservation = reservation_form.save(commit=False)
             reservation.sports_ground = sports_ground
             reservation.event_date = date_obj
