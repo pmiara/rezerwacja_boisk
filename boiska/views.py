@@ -1,8 +1,8 @@
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import render, get_object_or_404, redirect
 import datetime
 
 from .models import Place, Reservation
-from .forms import ReservationForm, ManageReservationsForm, EditReservationForm
+from .forms import NewReservationForm, ManageReservationsForm, EditReservationForm
 from .myutils import availability_calendar, check_availability, reservation_overlap 
 
 
@@ -50,9 +50,9 @@ def place_day(request, place_name, year, month, day):
         'display_form': True,
     }
     if request.method == 'POST':
-        reservation_form = ReservationForm(data=request.POST)
-        if reservation_form.is_valid():
-            reservation = reservation_form.save(commit=False)
+        new_reservation_form = NewReservationForm(data=request.POST)
+        if new_reservation_form.is_valid():
+            reservation = new_reservation_form.save(commit=False)
             reservation.event_date = datetime.date(int(year), int(month), int(day))
             reservation.save()
             context['display_form'] = False
@@ -60,8 +60,8 @@ def place_day(request, place_name, year, month, day):
         else:
             context['result_message'] = 'Twoja rezerwacja zawiera błędy.'
     else:
-        reservation_form = ReservationForm(place)
-    context['reservation_form'] = reservation_form
+        new_reservation_form = NewReservationForm(place)
+    context['new_reservation_form'] = new_reservation_form
     return render(request, 'boiska/place_day.html', context)
 
 def place_admin(request, place_name):
@@ -117,9 +117,17 @@ def edit_reservation(request, place_name, reservation_id):
     Edition of reservations for a Place administrator.
     """
     reservation = Reservation.objects.get(id=reservation_id)
-    edit_reservation_form = EditReservationForm(instance=reservation)
-    context = {
-        'reservation': reservation,
-        'edit_reservation_form': edit_reservation_form,
-    }
+    place = reservation.sports_ground.place
+    edit_reservation_form = EditReservationForm(instance=reservation, place=place)
+    if request.method == 'POST':
+        edit_reservation_form = EditReservationForm(
+            instance=reservation,
+            data=request.POST,
+            place=place
+        )
+        if edit_reservation_form.is_valid():
+            edited_reservation = edit_reservation_form.save(commit=False)
+            edited_reservation.save()
+            return redirect('boiska:place_admin', place_name)
+    context = {'edit_reservation_form': edit_reservation_form}
     return render(request, 'boiska/edit_reservation.html', context)
