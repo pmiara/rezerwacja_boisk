@@ -3,17 +3,16 @@ import datetime
 
 from .models import Place, Reservation
 
-def availability_calendar(year, month, place_obj):
+def availability_calendar(place, year, month):
     """
     Availability calendar returns a list of week lists.
     Each week list contains tuples in format:
-    (month_day, week_day, date, availability).
+    (month_day, week_day, availability).
     Availability values:
      - 0: almost every hour is available
      - 1: a sports ground is quite busy
      - 2: very busy
     """
-    month_year = str(month) + '-' + str(year)
     my_calendar = []
     for day in Calendar().itermonthdays2(year, month):
         # create a list for a new week
@@ -22,16 +21,15 @@ def availability_calendar(year, month, place_obj):
         if day[0] == 0:
             availability = 0
         else:
-            availability = check_availability(year, month, day[0], place_obj)
+            availability = check_availability(year, month, day[0], place)
         my_calendar[-1].append((
             day[0],                            # month_day
             day[1],                            # week_day
-            str(day[0]) + '-' + month_year,    # date in format d-m-yyyy
             availability
         ))
     return my_calendar
 
-def check_availability(year, month, day, place_obj):
+def check_availability(year, month, day, place):
     """
     Check availability of place's sports grounds on a particuar day.
     This function counts hours when sports grounds are busy - time_sum -
@@ -47,7 +45,7 @@ def check_availability(year, month, day, place_obj):
     time_sum = datetime.timedelta()
     total = datetime.timedelta()
     today = datetime.date.today()
-    for sports_ground in place_obj.sports_grounds.all():
+    for sports_ground in place.sports_grounds.all():
         reservations = sports_ground.reservations.filter(
             event_date=event_date,
             is_accepted=True

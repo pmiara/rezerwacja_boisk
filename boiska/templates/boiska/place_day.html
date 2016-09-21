@@ -31,6 +31,7 @@
     </div>
     {% endfor %}
     {% if display_form %}
+    <h4>Zarezerwuj boisko</h4>
     <form method="POST" id="reservation_form">
     {% csrf_token %}
         {{ reservation_form.as_p }}

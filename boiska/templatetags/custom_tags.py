@@ -8,5 +8,5 @@ def sort_by(query_set, order):
 
 @register.filter
 def filter_day(query_set, my_date):
-    date_obj = datetime.datetime.strptime(my_date, "%d-%m-%Y").date()
+    date_obj = datetime.datetime.strptime(my_date, "%Y/%m/%d").date()
     return query_set.filter(event_date=date_obj)

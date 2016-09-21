@@ -6,7 +6,9 @@ urlpatterns = [
     url(r'^$', views.index, name='index'),
     url(r'^(?P<place_name>[\w ]+)$', views.place, name='place'),
     url(r'(?P<place_name>[\w ]+)/'
-        r'(?P<my_date>\d\d?-\d\d?-\d{4})$',
+        r'(?P<year>\d{4})/'
+        r'(?P<month>\d\d?)/'
+        r'(?P<day>\d\d?)$',
         views.place_day,
         name='place_day'
     ),
@@ -14,8 +16,9 @@ urlpatterns = [
         views.place_admin,
         name='place_admin'
     ),
-    url(r'(?P<place_name>[\w ]+)/admin/'
-        r'edit/(?P<reservation_id>\d+)',
+    url(r'(?P<place_name>[\w ]+)/'
+        r'admin/edit_reservation/'
+        r'(?P<reservation_id>\d+)$',
         views.edit_reservation,
         name='edit_reservation'
     )

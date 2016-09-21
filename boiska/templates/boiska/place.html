@@ -16,12 +16,11 @@
             {% comment "Optional note" %}
             day.0 - month_day
             day.1 - week_day
-            day.2 - date
-            day.3 - availability
+            day.2 - availability
             {% endcomment %}
             {% if day.0 %}
-            <td class="day_color_{{ day.3 }}">
-                <a href="{% url 'boiska:place_day' name day.2 %}">
+            <td class="day_color_{{ day.2 }}">
+                <a href="{% url 'boiska:place_day' name year month day.0 %}">
                     {{ day.0 }}
                 </a>
             </td>

@@ -19,25 +19,24 @@ def place(request, place_name):
     Description of a place.
     Calendar showing availability of sports grounds.
     """
-    place_obj = get_object_or_404(Place, name=place_name)
+    place = get_object_or_404(Place, name=place_name)
     now = datetime.datetime.now()
-    my_calendar = availability_calendar(now.year, now.month, place_obj)
+    my_calendar = availability_calendar(place, now.year, now.month)
     context = {
         'name': place_name,
-        'description': place_obj.description,
-        'phone_number': place_obj.phone_number,
-        'city': place_obj.city,
-        'street': place_obj.street,
+        'description': place.description,
+        'phone_number': place.phone_number,
+        'city': place.city,
+        'street': place.street,
         'calendar': my_calendar,
         'year': now.year,
         'month': now.month,
     }
     return render(request, 'boiska/place.html', context)
 
-def place_day(request, place_name, my_date):
+def place_day(request, place_name, year, month, day):
     """
     Show reservations of sports grounds on a particular day.
-    my_date is in format: d-m-yyyy.
     User can do a reservation using ReservationForm. Date and sports_ground
     fields are added automatically to the form after validation.
     """
@@ -45,7 +44,7 @@ def place_day(request, place_name, my_date):
     sports_grounds = place.sports_grounds.all()
     context = {
         'name': place_name,
-        'date': my_date,
+        'date': '/'.join((year, month, day)),
         'sports_grounds': sports_grounds,
         'result_message': None,
         'display_form': True,
@@ -54,9 +53,7 @@ def place_day(request, place_name, my_date):
         reservation_form = ReservationForm(data=request.POST)
         if reservation_form.is_valid():
             reservation = reservation_form.save(commit=False)
-            date_strptime = datetime.datetime.strptime(my_date, "%d-%m-%Y")
-            date_obj = date_strptime.date()
-            reservation.event_date = date_obj
+            reservation.event_date = datetime.date(year, month, day)
             reservation.save()
             context['display_form'] = False
             context['result_message'] = 'Twoja rezerwacja czeka na akceptację.'
@@ -74,11 +71,11 @@ def place_admin(request, place_name):
      - accept reservations
      - delete not_accepted reservations
     """
-    place_obj = get_object_or_404(Place, name=place_name)
-    sports_grounds = place_obj.sports_grounds.all()
+    place = get_object_or_404(Place, name=place_name)
+    sports_grounds = place.sports_grounds.all()
     result_messages = []
     if request.method == 'POST':
-        edit_reservations_form = EditReservationsForm(place_obj, data=request.POST)
+        edit_reservations_form = EditReservationsForm(place, data=request.POST)
         if edit_reservations_form.is_valid():
             reservations_ids = request.POST.getlist('reservations')
             reservations = Reservation.objects.filter(
@@ -106,7 +103,7 @@ def place_admin(request, place_name):
     for sports_ground in sports_grounds:
         for reservation in sports_ground.reservations.filter(is_accepted=False):
             not_accepted.append(reservation)
-    edit_reservations_form = EditReservationsForm(place_obj)
+    edit_reservations_form = EditReservationsForm(place)
     context = {
         'place_name': place_name,
         'reservations_not_accepted': not_accepted,
