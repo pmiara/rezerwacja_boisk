@@ -10,7 +10,6 @@
     {% if result_message %}
     <p>{{ result_message }}</p>
     {% endif %}
-    {{ reservation_form.errors }}
     {% for sports_ground in sports_grounds %}
     <div>
         <h5>{{ sports_ground.local_name }}</h5>
@@ -29,15 +28,13 @@
             {% endif %}
         {% endfor %}
         {% endwith %}
-        {% if display_form %}
-        <form method="POST" class="reservation_form">
-        {% csrf_token %}
-            {{ reservation_form.as_p }}
-            <input name="local_id" value="{{ sports_ground.local_id }}" type="hidden">
-            <input name="name_prefix" value="{{ sports_ground.name_prefix }}" type="hidden">
-            <button type="submit">Zarezerwuj</button>
-        </form>
-        {% endif %}
     </div>
     {% endfor %}
+    {% if display_form %}
+    <form method="POST" id="reservation_form">
+    {% csrf_token %}
+        {{ reservation_form.as_p }}
+        <button type="submit">Zarezerwuj</button>
+    </form>
+    {% endif %}
 {% endblock content %}

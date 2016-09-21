@@ -41,29 +41,21 @@ def place_day(request, place_name, my_date):
     User can do a reservation using ReservationForm. Date and sports_ground
     fields are added automatically to the form after validation.
     """
-    place_obj = get_object_or_404(Place, name=place_name)
-    sports_grounds = place_obj.sports_grounds.all()
+    place = get_object_or_404(Place, name=place_name)
+    sports_grounds = place.sports_grounds.all()
     context = {
         'name': place_name,
         'date': my_date,
         'sports_grounds': sports_grounds,
         'result_message': None,
-        'reservation_form': None,
         'display_form': True,
     }
     if request.method == 'POST':
-        date_strptime = datetime.datetime.strptime(my_date, "%d-%m-%Y")
-        date_obj = date_strptime.date()
-        name_prefix = request.POST['name_prefix']
-        local_id = request.POST['local_id']
-        sports_ground = sports_grounds.get(
-            name_prefix=name_prefix,
-            local_id=local_id
-        )
         reservation_form = ReservationForm(data=request.POST)
-        if reservation_form.is_valid(sports_ground):
+        if reservation_form.is_valid():
             reservation = reservation_form.save(commit=False)
-            reservation.sports_ground = sports_ground
+            date_strptime = datetime.datetime.strptime(my_date, "%d-%m-%Y")
+            date_obj = date_strptime.date()
             reservation.event_date = date_obj
             reservation.save()
             context['display_form'] = False
@@ -71,7 +63,7 @@ def place_day(request, place_name, my_date):
         else:
             context['result_message'] = 'Twoja rezerwacja zawiera błędy.'
     else:
-        reservation_form = ReservationForm()
+        reservation_form = ReservationForm(place)
     context['reservation_form'] = reservation_form
     return render(request, 'boiska/place_day.html', context)
 
