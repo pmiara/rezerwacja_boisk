@@ -53,7 +53,7 @@ def place_day(request, place_name, year, month, day):
         reservation_form = ReservationForm(data=request.POST)
         if reservation_form.is_valid():
             reservation = reservation_form.save(commit=False)
-            reservation.event_date = datetime.date(year, month, day)
+            reservation.event_date = datetime.date(int(year), int(month), int(day))
             reservation.save()
             context['display_form'] = False
             context['result_message'] = 'Twoja rezerwacja czeka na akceptację.'
@@ -117,7 +117,7 @@ def edit_reservation(request, place_name, reservation_id):
     Edition of reservations for a Place administrator.
     """
     reservation = Reservation.objects.get(id=reservation_id)
-    edit_reservation_form = EditReservationForm()
+    edit_reservation_form = EditReservationForm(instance=reservation)
     context = {
         'reservation': reservation,
         'edit_reservation_form': edit_reservation_form,
