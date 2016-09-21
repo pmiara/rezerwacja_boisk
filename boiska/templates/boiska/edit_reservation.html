@@ -1,0 +1,11 @@
+{% extends 'boiska/base.html' %}
+{% block content %}
+    <h3>{{ place_name }}</h3>
+    <br />
+    <h4>Edycja rezerwacji</h4>
+    <form method="POST">
+        {% csrf_token %}
+        <button type="submit">Go</button>
+        {{ edit_single_reservation_form.as_p }}
+    </form>
+{% endblock content %}

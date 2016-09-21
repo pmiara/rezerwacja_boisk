@@ -2,7 +2,7 @@ from django.shortcuts import render, get_object_or_404
 import datetime
 
 from .models import Place, Reservation
-from .forms import ReservationForm, EditReservationsForm
+from .forms import ReservationForm, EditReservationsForm, EditSingleReservationForm
 from .myutils import availability_calendar, check_availability, reservation_overlap 
 
 
@@ -69,7 +69,7 @@ def place_day(request, place_name, my_date):
             context['display_form'] = False
             context['result_message'] = 'Twoja rezerwacja czeka na akceptację.'
         else:
-            context['result_message'] = reservation_form.errors
+            context['result_message'] = 'Twoja rezerwacja zawiera błędy.'
     else:
         reservation_form = ReservationForm()
     context['reservation_form'] = reservation_form
@@ -122,3 +122,15 @@ def place_admin(request, place_name):
         'result_messages': result_messages,
     }
     return render(request, 'boiska/place_admin.html', context)
+
+def edit_reservation(request, place_name, reservation_id):
+    """
+    Edition of reservations for a Place administrator.
+    """
+    reservation = Reservation.objects.get(id=reservation_id)
+    edit_single_reservation_form = EditSingleReservationForm()
+    context = {
+        'reservation': reservation,
+        'edit_single_reservation_form': edit_single_reservation_form,
+    }
+    return render(request, 'boiska/edit_reservation.html', context)

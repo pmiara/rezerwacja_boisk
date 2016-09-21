@@ -40,3 +40,8 @@ class EditReservationsForm(forms.Form):
             queryset=reservations,
             widget=forms.CheckboxSelectMultiple()
         )
+
+class EditSingleReservationForm(forms.ModelForm):
+    class Meta:
+        model = Reservation
+        fields = '__all__'
