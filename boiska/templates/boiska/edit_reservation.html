@@ -6,6 +6,6 @@
     <form method="POST">
         {% csrf_token %}
         <button type="submit">Go</button>
-        {{ edit_single_reservation_form.as_p }}
+        {{ edit_reservation_form.as_p }}
     </form>
 {% endblock content %}

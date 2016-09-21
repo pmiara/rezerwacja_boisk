@@ -24,13 +24,13 @@ class ReservationForm(forms.ModelForm):
         return self.cleaned_data
 
 
-class EditReservationsForm(forms.Form):
+class ManageReservationsForm(forms.Form):
     action = forms.ChoiceField(
         choices=Reservation.ACTION_CHOICES,
         widget=forms.Select()
     )
     def __init__(self, place, *args, **kwargs):
-        super(EditReservationsForm, self).__init__(*args, **kwargs)
+        super(ManageReservationsForm, self).__init__(*args, **kwargs)
         reservations = Reservation.objects.filter(
             sports_ground__place=place,
             is_accepted=False
@@ -41,7 +41,7 @@ class EditReservationsForm(forms.Form):
         )
 
 
-class EditSingleReservationForm(forms.ModelForm):
+class EditReservationForm(forms.ModelForm):
     class Meta:
         model = Reservation
         fields = '__all__'

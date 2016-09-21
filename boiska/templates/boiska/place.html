@@ -1,6 +1,6 @@
 {% extends 'boiska/base.html' %}
 {% block content %}
-    <h3>{{ name }}</h3>
+    <h3>{{ place_name }}</h3>
     <p>{{ description }}</p>
     <br />
     <h4>Dane kontaktowe:</h4>
@@ -20,7 +20,7 @@
             {% endcomment %}
             {% if day.0 %}
             <td class="day_color_{{ day.2 }}">
-                <a href="{% url 'boiska:place_day' name year month day.0 %}">
+                <a href="{% url 'boiska:place_day' place_name year month day.0 %}">
                     {{ day.0 }}
                 </a>
             </td>
