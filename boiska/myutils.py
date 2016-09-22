@@ -57,6 +57,9 @@ def check_availability(year, month, day, place):
         opening_time = datetime.datetime.combine(today, sports_ground.opening_time)
         closing_time = datetime.datetime.combine(today, sports_ground.closing_time)
         total += closing_time - opening_time
+    # if there are no sports grounds then time_sum / total raises exception
+    if total == datetime.timedelta():
+        return 0
     result = time_sum / total
     if result > 0.6:
         return 2
