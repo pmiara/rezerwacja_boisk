@@ -6,7 +6,7 @@ from .models import Reservation, SportsGround
 class ReservationForm(forms.ModelForm):
     def __init__(self, place=None, *args, **kwargs):
         """
-        Limit sports grounds to these which belongs to the particular place.
+        Limit sports grounds to these that belong to the particular place.
         """
         super(ReservationForm, self).__init__(*args, **kwargs)
         if place is not None:

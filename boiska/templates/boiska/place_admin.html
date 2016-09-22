@@ -9,6 +9,16 @@
     <form method="POST">
         {% csrf_token %}
         <button type="submit">Go</button>
-        {{ manage_reservations_form.as_p }}
+        {{ manage_reservations_form.action }}
+        <ul>
+        {% for reservation in manage_reservations_form.reservations %}
+            <li>
+            {{ reservation }} 
+            <a href="{% url 'boiska:edit_reservation' place_name reservation.choice_value %}">
+                Edytuj
+            </a>
+            </li>
+        {% endfor %}
+        </ul>
     </form>
 {% endblock content %}
