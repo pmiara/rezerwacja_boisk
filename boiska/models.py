@@ -1,5 +1,6 @@
 from django.contrib.auth.models import User
 from django.db import models
+from django.core.validators import RegexValidator
 
 
 class Place(models.Model):
@@ -7,7 +8,16 @@ class Place(models.Model):
     Place is a location with sports grounds. Administrator is a person
     who can edit info about a Place and manage registrations.
     """
-    name = models.CharField(max_length=40, primary_key=True)
+    name = models.CharField(
+        max_length=40,
+        primary_key=True,
+        validators=[
+            RegexValidator(
+                regex='[\w ]+',
+                message='Name may contain only letters, numbers, underscores and spaces.'
+            )
+        ]
+    )
     administrator = models.ForeignKey(
         User,
         on_delete=models.CASCADE
