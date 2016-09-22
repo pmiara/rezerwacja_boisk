@@ -108,6 +108,7 @@ class Reservation(models.Model):
     )
     
     def __str__(self):
-        event_time = str(self.start_time) + ' - ' + str(self.end_time)
-        when = str(self.event_date) + ' ' + event_time
+        event_time = (self.start_time.strftime('%H:%M')
+            + ' - ' + self.end_time.strftime('%H:%M'))
+        when = str(self.event_date) + ', ' + event_time
         return str(self.sports_ground) + ', ' + when

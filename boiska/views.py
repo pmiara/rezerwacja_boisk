@@ -2,7 +2,8 @@ from django.shortcuts import render, get_object_or_404, redirect
 import datetime
 
 from .models import Place, Reservation
-from .forms import NewReservationForm, ManageReservationsForm, EditReservationForm
+from .forms import (NewReservationForm, ManageReservationsForm,
+    EditReservationForm, EditPlaceForm)
 from .myutils import availability_calendar, check_availability, reservation_overlap 
 
 
@@ -23,11 +24,7 @@ def place(request, place_name):
     now = datetime.datetime.now()
     my_calendar = availability_calendar(place, now.year, now.month)
     context = {
-        'place_name': place_name,
-        'description': place.description,
-        'phone_number': place.phone_number,
-        'city': place.city,
-        'street': place.street,
+        'place': place,
         'calendar': my_calendar,
         'year': now.year,
         'month': now.month,
@@ -70,12 +67,16 @@ def place_admin(request, place_name):
     Administrator of a Place can do following actions:
      - accept reservations
      - delete not_accepted reservations
+     - edit reservations
     """
     place = get_object_or_404(Place, name=place_name)
     sports_grounds = place.sports_grounds.all()
     result_messages = []
     if request.method == 'POST':
-        manage_reservations_form = ManageReservationsForm(place, data=request.POST)
+        manage_reservations_form = ManageReservationsForm(
+            place,
+            data=request.POST
+        )
         if manage_reservations_form.is_valid():
             reservations_ids = request.POST.getlist('reservations')
             reservations = Reservation.objects.filter(
@@ -105,7 +106,8 @@ def place_admin(request, place_name):
             not_accepted.append(reservation)
     manage_reservations_form = ManageReservationsForm(place)
     context = {
-        'place_name': place_name,
+        'place': place,
+        'sports_grounds': sports_grounds,
         'reservations_not_accepted': not_accepted,
         'manage_reservations_form': manage_reservations_form,
         'result_messages': result_messages,
@@ -118,7 +120,10 @@ def edit_reservation(request, place_name, reservation_id):
     """
     reservation = Reservation.objects.get(id=reservation_id)
     place = reservation.sports_ground.place
-    edit_reservation_form = EditReservationForm(instance=reservation, place=place)
+    edit_reservation_form = EditReservationForm(
+        instance=reservation,
+        place=place
+    )
     if request.method == 'POST':
         edit_reservation_form = EditReservationForm(
             instance=reservation,
@@ -126,8 +131,28 @@ def edit_reservation(request, place_name, reservation_id):
             place=place
         )
         if edit_reservation_form.is_valid():
-            edited_reservation = edit_reservation_form.save(commit=False)
-            edited_reservation.save()
+            edit_reservation_form.save()
             return redirect('boiska:place_admin', place_name)
-    context = {'edit_reservation_form': edit_reservation_form}
+    context = {
+        'edit_reservation_form': edit_reservation_form,
+        'place_name': place_name,
+        'reservation': reservation,
+    }
     return render(request, 'boiska/edit_reservation.html', context)
+
+def edit_place(request, place_name):
+    """
+    Edition of place.
+    """
+    place = Place.objects.get(name=place_name)
+    edit_place_form = EditPlaceForm(instance=place)
+    if request.method == 'POST':
+        edit_place_form = EditPlaceForm(instance=place, data=request.POST)
+        if edit_place_form.is_valid():
+            edit_place_form.save()
+            return redirect('boiska:place_admin', place_name)
+    context = {
+        'edit_place_form': edit_place_form,
+        'place_name': place_name,
+    }
+    return render(request, 'boiska/edit_place.html', context)

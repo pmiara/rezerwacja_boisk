@@ -14,7 +14,7 @@
     <div>
         <h5>{{ sports_ground.local_name }}</h5>
         <p>
-            {{ sports_ground.opening_time|time:"H:i" }} - 
+            {{ sports_ground.opening_time|time:"H:i" }} -
             {{ sports_ground.closing_time|time:"H:i" }}
         </p>
         {% with reservations=sports_ground.reservations|filter_day:date %}
@@ -22,7 +22,7 @@
             {% if reservation.is_accepted %}
         <div class="reserved">
             {{ reservation.surname }}, {{ reservation.email }}, 
-            {{ reservation.start_time|time:'H:i' }} -  
+            {{ reservation.start_time|time:'H:i' }} -
             {{ reservation.end_time|time:'H:i' }}
         </div>
             {% endif %}

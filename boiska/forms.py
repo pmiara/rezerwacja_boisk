@@ -1,7 +1,7 @@
 from django import forms
 from django.core.exceptions import ValidationError
 
-from .models import Reservation, SportsGround
+from .models import Place, Reservation, SportsGround
 
 class ReservationForm(forms.ModelForm):
     def __init__(self, place=None, *args, **kwargs):
@@ -52,3 +52,8 @@ class ManageReservationsForm(forms.Form):
             queryset=reservations,
             widget=forms.CheckboxSelectMultiple()
         )
+
+class EditPlaceForm(forms.ModelForm):
+    class Meta:
+        model = Place
+        exclude = ('name', 'administrator')

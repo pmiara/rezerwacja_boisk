@@ -1,8 +1,17 @@
 {% extends 'boiska/base.html' %}
 {% block content %}
-    <h3>{{ place_name }}</h3>
-    <br />
-    <h4>Rezerwacje do zaakceptowania</h4>
+    <h2>{{ place.name }}</h2>
+    <p>{{ place.description }}</p>
+    <h4>Dane kontaktowe:</h4>
+    <ul>
+        <li>{{ place.street }}, {{ place.city }}</li>
+        <li>{{ place.phone_number }}</li>
+    </ul>
+    <a href="{% url 'boiska:edit_place' place.name %}">Edytuj dane</a>
+    {% for sports_ground in sports_grounds %}
+        <h4>{{ sports_ground }}</h4>
+    {% endfor %}
+    <h3>Rezerwacje do zaakceptowania</h3>
     {% for message in result_messages %}
     <p>{{ message }}</p>
     {% endfor %}
@@ -14,7 +23,7 @@
         {% for reservation in manage_reservations_form.reservations %}
             <li>
             {{ reservation }} 
-            <a href="{% url 'boiska:edit_reservation' place_name reservation.choice_value %}">
+            <a href="{% url 'boiska:edit_reservation' place.name reservation.choice_value %}">
                 Edytuj
             </a>
             </li>

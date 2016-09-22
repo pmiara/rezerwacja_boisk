@@ -2,12 +2,11 @@
 {% block content %}
     <h3><a href="{% url 'boiska:place_admin' place_name %}">
         {{ place_name }}</a>
-        - edycja rezerwacji
+        - edycja
     </h3>
-    <h4>{{ reservation }}</h4>
     <form method="POST">
         {% csrf_token %}
-        {{ edit_reservation_form.as_p }}
+        {{ edit_place_form.as_p }}
         <button type="submit">Zapisz</button>
     </form>
 {% endblock content %}

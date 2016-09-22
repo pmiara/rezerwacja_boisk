@@ -12,7 +12,8 @@ urlpatterns = [
         views.place_day,
         name='place_day'
     ),
-    url(r'(?P<place_name>[\w ]+)/admin$',
+    url(r'(?P<place_name>[\w ]+)/'
+        r'admin$',
         views.place_admin,
         name='place_admin'
     ),
@@ -21,5 +22,10 @@ urlpatterns = [
         r'(?P<reservation_id>\d+)$',
         views.edit_reservation,
         name='edit_reservation'
-    )
+    ),
+    url(r'(?P<place_name>[\w ]+)/'
+        r'admin/edit_place$',
+        views.edit_place,
+        name='edit_place'
+    ),
 ]
