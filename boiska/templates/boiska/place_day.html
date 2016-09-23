@@ -38,4 +38,13 @@
         <button type="submit">Zarezerwuj</button>
     </form>
     {% endif %}
+    <script>
+        $(function() {
+            $('#id_start_time, #id_end_time').timepicker({
+                'timeFormat': 'H:i',
+                'disableTextInput': true,
+                'scrollDefault': 'now',
+            });
+        });
+    </script>
 {% endblock content %}
