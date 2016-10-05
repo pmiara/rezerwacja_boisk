@@ -5,6 +5,12 @@ app_name = 'boiska'
 urlpatterns = [
     url(r'^$', views.index, name='index'),
     url(r'^(?P<place_name>[\w ]+)$', views.place, name='place'),
+    url(r'^(?P<place_name>[\w ]+)/'
+        r'(?P<year>\d{4})/'
+        r'(?P<month>\d\d?)$',
+        views.place,
+        name='place'
+    ),
     url(r'(?P<place_name>[\w ]+)/'
         r'(?P<year>\d{4})/'
         r'(?P<month>\d\d?)/'

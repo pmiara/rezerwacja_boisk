@@ -1,4 +1,5 @@
 {% extends 'boiska/base.html' %}
+{% load custom_tags %}
 {% block content %}
     <h3>{{ place.name }}</h3>
     <p>{{ place.description }}</p>
@@ -10,10 +11,21 @@
     </ul>
     <h4>Dostępność boisk</h4>
     <table>
+        <tr>
+            <td>
+                <a href="{% url 'boiska:place' place.name year month|add:-1 %}">&lt;</a>
+            </td>
+            <th colspan="5">
+                {{ month|polish_month_name }}
+            </th>
+            <td>
+                <a href="{% url 'boiska:place' place.name year month|add:1 %}">&gt;</a>
+            </td>
+        </tr>
         {% for week in calendar %}
         <tr>
             {% for day in week %}
-            {% comment "Optional note" %}
+            {% comment %}
             day.0 - month_day
             day.1 - week_day
             day.2 - availability

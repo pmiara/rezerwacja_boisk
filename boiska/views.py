@@ -1,4 +1,5 @@
 from django.shortcuts import render, get_object_or_404, redirect
+from django.http import Http404
 import datetime
 
 from .models import Place, Reservation
@@ -15,19 +16,25 @@ def index(request):
     context = {'places': places}
     return render(request, 'boiska/index.html', context)
 
-def place(request, place_name):
+def place(request, place_name, year=None, month=None):
     """
     Description of a place.
     Calendar showing availability of sports grounds.
     """
     place = get_object_or_404(Place, name=place_name)
     now = datetime.datetime.now()
-    my_calendar = availability_calendar(place, now.year, now.month)
+    year = year or now.year
+    year = int(year)
+    month = month or now.month
+    month = int(month)
+    if month < 1 or month > 12:
+        raise Http404
+    my_calendar = availability_calendar(place, year, month)
     context = {
         'place': place,
         'calendar': my_calendar,
-        'year': now.year,
-        'month': now.month,
+        'year': year,
+        'month': month,
     }
     return render(request, 'boiska/place.html', context)
 
