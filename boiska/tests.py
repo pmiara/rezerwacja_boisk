@@ -3,25 +3,8 @@ from django.core.urlresolvers import resolve
 from django.contrib.auth.models import User
 
 import boiska.views as views
-from .models import Place
-
-
-def create_user(username='ExampleMan', password='qwerty123'):
-    return User.objects.create(username=username, password=password)
-
-
-def create_place(place_name='Poznań Rataje', place_administrator=None):
-    if place_administrator == None:
-        place_administrator = create_user()
-    place_args = {
-        'name': place_name,
-        'administrator': place_administrator,
-        'description': 'Example description.',
-        'phone_number': '123321123',
-        'city': 'Poznań',
-        'street': 'Nowina',
-    }
-    return Place.objects.create(**place_args)
+from .models import Place, Reservation
+from .myutils import create_user, create_place, create_sports_grounds, create_reservations
 
 
 class BaseViewTest:
@@ -56,3 +39,31 @@ class PlaceViewTest(TestCase, BaseViewTest):
         self.url = '/' + place_name
         self.expected_view = views.place
         self.expected_template = 'boiska/place.html'
+
+
+class PlaceAdminViewTest(TestCase, BaseViewTest):
+    
+    def setUp(self):
+        place_name = 'Ośrodek Przywodny Rataje'
+        self.place = create_place(place_name=place_name)
+        self.url = '/' + place_name + '/' + 'admin'
+        self.expected_view = views.place_admin
+        self.expected_template = 'boiska/place_admin.html'
+        self.prepare_reservations()
+    
+    def prepare_reservations(self):
+        create_sports_grounds(self.place)
+        for sports_ground in self.place.sports_grounds.all():
+            create_reservations(sports_ground)
+    
+    def test_not_accepted_reservations_in_context(self):
+        response = self.client.get(self.url)
+        self.assertIn('reservations_not_accepted', response.context)
+        
+    def test_number_of_reservations_in_context(self):
+        response = self.client.get(self.url)
+        reservations_in_context = response.context['reservations_not_accepted']
+        actual_reservations = Reservation.objects.filter(
+            sports_ground__place = self.place
+        )
+        self.assertEqual(len(reservations_in_context), len(actual_reservations))
