@@ -3,12 +3,17 @@ from . import views
 
 app_name = 'boiska'
 urlpatterns = [
-    url(r'^$', views.index, name='index'),
-    url(r'^(?P<place_name>[\w ]+)$', views.place, name='place'),
+    url(r'^$', views.IndexView.as_view(),
+        name='index'
+    ),
+    url(r'^(?P<place_name>[\w ]+)$',
+        views.PlaceView.as_view(),
+        name='place'
+    ),
     url(r'^(?P<place_name>[\w ]+)/'
         r'(?P<year>\d{4})/'
         r'(?P<month>\d\d?)$',
-        views.place,
+        views.PlaceView.as_view(),
         name='place'
     ),
     url(r'(?P<place_name>[\w ]+)/'

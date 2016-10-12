@@ -8,10 +8,10 @@ from .myutils import create_user, create_place, create_sports_grounds, create_re
 
 
 class BaseViewTest:
-
+    
     def test_url_resolves_to_correct_view(self):
         resolver_match = resolve(self.url)
-        self.assertEqual(resolver_match.func, self.expected_view)
+        self.assertEqual(resolver_match.view_name, self.expected_view_name)
 
     def test_view_uses_correct_template(self):
         response = self.client.get(self.url)
@@ -24,7 +24,7 @@ class IndexViewTest(TestCase, BaseViewTest):
 
     def setUp(self):
         self.url = '/'
-        self.expected_view = views.index
+        self.expected_view_name = 'boiska:index'
         self.expected_template = 'boiska/index.html'
 
     def test_places_in_context(self):
@@ -38,7 +38,7 @@ class PlaceViewTest(TestCase, BaseViewTest):
         place_name = 'Kórnik OSIR'
         new_place = create_place(place_name=place_name)
         self.url = '/' + place_name
-        self.expected_view = views.place
+        self.expected_view_name = 'boiska:place'
         self.expected_template = 'boiska/place.html'
 
 
@@ -48,7 +48,7 @@ class PlaceAdminViewTest(TestCase, BaseViewTest):
         place_name = 'Ośrodek Przywodny Rataje'
         self.place = create_place(place_name=place_name)
         self.url = '/' + place_name + '/' + 'admin'
-        self.expected_view = views.place_admin
+        self.expected_view_name = 'boiska:place_admin'
         self.expected_template = 'boiska/place_admin.html'
         self.prepare_reservations()
 
@@ -76,5 +76,5 @@ class PlaceDayViewTest(TestCase, BaseViewTest):
         place_name = 'Wejcherowo'
         new_place = create_place(place_name=place_name)
         self.url = '/' + place_name + '/2016/09/23'
-        self.expected_view = views.place_day
+        self.expected_view_name = 'boiska:place_day'
         self.expected_template = 'boiska/place_day.html'

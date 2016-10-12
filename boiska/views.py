@@ -1,42 +1,113 @@
 from django.shortcuts import render, get_object_or_404, redirect
+from django.views import View
 from django.http import Http404
+
 import datetime
+from calendar import Calendar
 
 from .models import Place, Reservation
 from .forms import (NewReservationForm, ManageReservationsForm,
     EditReservationForm, EditPlaceForm)
-from .myutils import availability_calendar, check_availability, reservation_overlap 
+from .myutils import reservation_overlap
 
 
-def index(request):
+class IndexView(View):
     """
     Main page of the site. List of all locations.
     """
-    places = Place.objects.all()
-    context = {'places': places}
-    return render(request, 'boiska/index.html', context)
+    def get(self, request):
+        places = Place.objects.all()
+        context = {'places': places}
+        return render(request, 'boiska/index.html', context)
 
-def place(request, place_name, year=None, month=None):
+
+class PlaceView(View):
     """
     Description of a place.
     Calendar showing availability of sports grounds.
     """
-    place = get_object_or_404(Place, name=place_name)
-    now = datetime.datetime.now()
-    year = year or now.year
-    year = int(year)
-    month = month or now.month
-    month = int(month)
-    if month < 1 or month > 12:
-        raise Http404
-    my_calendar = availability_calendar(place, year, month)
-    context = {
-        'place': place,
-        'calendar': my_calendar,
-        'year': year,
-        'month': month,
-    }
-    return render(request, 'boiska/place.html', context)
+
+    EMPTY = 0
+    BUSY = 1
+    VERY_BUSY = 2
+
+    def get(self, request, place_name, year=None, month=None):
+        self.place = get_object_or_404(Place, name=place_name)
+        self.year = year
+        self.month = month
+        self.prepare_and_check_year_month()
+        my_calendar = self.availability_calendar()
+        context = {
+            'place': self.place,
+            'calendar': my_calendar,
+            'year': self.year,
+            'month': self.month,
+        }
+        return render(request, 'boiska/place.html', context)
+
+    def prepare_and_check_year_month(self):
+        now = datetime.datetime.now()
+        if self.year == None:
+            self.year = now.year
+        else:
+            self.year = int(self.year)
+        if self.month == None:
+            self.month = now.month
+        else:
+            self.month = int(self.month)
+        if self.month < 1 or self.month > 12:
+            raise Http404
+
+    def availability_calendar(self):
+        """
+        Availability calendar returns a list of week lists.
+        """
+        my_calendar = []
+        for day in Calendar().itermonthdays2(self.year, self.month):
+            day_dict = {
+                'month_day': day[0],
+                'week_day': day[1],
+                'availability': None,
+            }
+            if day_dict['week_day'] == 0:
+                my_calendar.append([])
+            if day_dict['month_day'] != 0:
+                day_dict['availability'] = self.check_availability(day_dict['month_day'])
+            my_calendar[-1].append(day_dict)
+        return my_calendar
+
+    def check_availability(self, month_day):
+        """
+        Check availability of place's sports grounds on a particuar day.
+        """
+        event_date = datetime.date(self.year, self.month, month_day)
+        time_sum = datetime.timedelta()
+        total = datetime.timedelta()
+        today = datetime.date.today()
+
+        for sports_ground in self.place.sports_grounds.all():
+            reservations = sports_ground.reservations.filter(
+                event_date=event_date,
+                is_accepted=True
+            )
+            for reservation in reservations:
+                start_time = datetime.datetime.combine(today, reservation.start_time)
+                end_time = datetime.datetime.combine(today, reservation.end_time)
+                time_sum += end_time - start_time
+            opening_time = datetime.datetime.combine(today, sports_ground.opening_time)
+            closing_time = datetime.datetime.combine(today, sports_ground.closing_time)
+            total += closing_time - opening_time
+
+        if total == datetime.timedelta():
+            return self.EMPTY
+        result = time_sum / total
+        if result > 0.6:
+            return self.VERY_BUSY
+        elif result > 0.3:
+            return self.BUSY
+        else:
+            return self.EMPTY
+
 
 def place_day(request, place_name, year, month, day):
     """
