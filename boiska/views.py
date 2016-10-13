@@ -109,35 +109,48 @@ class PlaceView(View):
             return self.EMPTY
 
 
-def place_day(request, place_name, year, month, day):
+class PlaceDayView(View):
     """
     Show reservations of sports grounds on a particular day.
     User can do a reservation using ReservationForm. Date and sports_ground
     fields are added automatically to the form after validation.
     """
-    place = get_object_or_404(Place, name=place_name)
-    sports_grounds = place.sports_grounds.all()
-    context = {
-        'place_name': place_name,
-        'date': '/'.join((year, month, day)),
-        'sports_grounds': sports_grounds,
-        'result_message': None,
-        'display_form': True,
-    }
-    if request.method == 'POST':
+    def get(self, request, place_name, year, month, day):
+        self.initial_settings(place_name, year, month, day)
+        new_reservation_form = NewReservationForm(self.place)
+        self.context['new_reservation_form'] = new_reservation_form
+        return render(request, 'boiska/place_day.html', self.context)
+
+    def post(self, request, place_name, year, month, day):
+        self.initial_settings(place_name, year, month, day)
+        self.context['result_message'] = None
         new_reservation_form = NewReservationForm(data=request.POST)
         if new_reservation_form.is_valid():
             reservation = new_reservation_form.save(commit=False)
             reservation.event_date = datetime.date(int(year), int(month), int(day))
             reservation.save()
-            context['display_form'] = False
-            context['result_message'] = 'Twoja rezerwacja czeka na akceptację.'
+            self.context['result_message'] = 'Twoja rezerwacja czeka na akceptację.'
         else:
-            context['result_message'] = 'Twoja rezerwacja zawiera błędy.'
-    else:
-        new_reservation_form = NewReservationForm(place)
-    context['new_reservation_form'] = new_reservation_form
-    return render(request, 'boiska/place_day.html', context)
+            self.context['result_message'] = 'Twoja rezerwacja zawiera błędy.'
+        self.context['new_reservation_form'] = new_reservation_form
+        return render(request, 'boiska/place_day.html', self.context)
+
+    def initial_settings(self, place_name, year, month, day):
+        self.place_name = place_name
+        self.year = year
+        self.month = month
+        self.day = day
+        self.place = get_object_or_404(Place, name=self.place_name)
+        self.sports_grounds = self.place.sports_grounds.all()
+        self.prepare_context()
+
+    def prepare_context(self):
+        self.context = {
+            'place_name': self.place_name,
+            'date': '/'.join((self.year, self.month, self.day)),
+            'sports_grounds': self.sports_grounds,
+        }
+
 
 def place_admin(request, place_name):
     """

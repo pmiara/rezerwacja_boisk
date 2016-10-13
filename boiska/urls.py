@@ -20,7 +20,7 @@ urlpatterns = [
         r'(?P<year>\d{4})/'
         r'(?P<month>\d\d?)/'
         r'(?P<day>\d\d?)$',
-        views.place_day,
+        views.PlaceDayView.as_view(),
         name='place_day'
     ),
     url(r'(?P<place_name>[\w ]+)/'

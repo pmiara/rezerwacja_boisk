@@ -6,10 +6,10 @@
         <h3>{{ place_name }}</h3>
     </a>
     <br />
+    <p id="result_message">
+      {{ result_message }}
+    </p>
     <h4>Dostępność boisk w dniu {{ date }}</h4>
-    {% if result_message %}
-    <p>{{ result_message }}</p>
-    {% endif %}
     {% for sports_ground in sports_grounds %}
     <div>
         <h5>{{ sports_ground.local_name }}</h5>
@@ -21,7 +21,7 @@
         {% for reservation in reservations|sort_by:'start_time' %}
             {% if reservation.is_accepted %}
         <div class="reserved">
-            {{ reservation.surname }}, {{ reservation.email }}, 
+            {{ reservation.surname }}, {{ reservation.email }},
             {{ reservation.start_time|time:'H:i' }} -
             {{ reservation.end_time|time:'H:i' }}
         </div>
@@ -30,14 +30,12 @@
         {% endwith %}
     </div>
     {% endfor %}
-    {% if display_form %}
     <h4>Zarezerwuj boisko</h4>
     <form method="POST" id="reservation_form">
     {% csrf_token %}
         {{ new_reservation_form.as_p }}
         <button type="submit">Zarezerwuj</button>
     </form>
-    {% endif %}
     <script>
         $(function() {
             $('#id_start_time, #id_end_time').timepicker({

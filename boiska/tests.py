@@ -8,7 +8,7 @@ from .myutils import create_user, create_place, create_sports_grounds, create_re
 
 
 class BaseViewTest:
-    
+
     def test_url_resolves_to_correct_view(self):
         resolver_match = resolve(self.url)
         self.assertEqual(resolver_match.view_name, self.expected_view_name)
