@@ -5,6 +5,7 @@ from django.contrib.auth.models import User
 import boiska.views as views
 from .models import Place, Reservation
 from .myutils import create_user, create_place, create_sports_grounds, create_reservations
+from .forms import NewReservationForm
 
 
 class BaseViewTest:
@@ -17,7 +18,10 @@ class BaseViewTest:
         response = self.client.get(self.url)
         self.assertTemplateUsed(response, self.expected_template)
         self.assertEqual(response.status_code, 200)
-        self.assertIn('Rezerwacja boisk', response.content.decode())
+
+    def test_template_extends_after_base(self):
+        response = self.client.get(self.url)
+        self.assertTemplateUsed(response, 'boiska/base.html')
 
 
 class IndexViewTest(TestCase, BaseViewTest):
@@ -29,7 +33,7 @@ class IndexViewTest(TestCase, BaseViewTest):
 
     def test_places_in_context(self):
         response = self.client.get(self.url)
-        self.assertIn('places', response.context)
+        self.assertIn('place_list', response.context)
 
 
 class PlaceViewTest(TestCase, BaseViewTest):
@@ -73,8 +77,43 @@ class PlaceAdminViewTest(TestCase, BaseViewTest):
 class PlaceDayViewTest(TestCase, BaseViewTest):
 
     def setUp(self):
-        place_name = 'Wejcherowo'
-        new_place = create_place(place_name=place_name)
-        self.url = '/' + place_name + '/2016/09/23'
+        self.place_name = 'Wejcherowo'
+        self.place = create_place(place_name=self.place_name)
+        self.url = '/' + self.place_name + '/2016/09/23'
         self.expected_view_name = 'boiska:place_day'
         self.expected_template = 'boiska/place_day.html'
+
+    def test_place_name_in_context(self):
+        response = self.client.get(self.url)
+        self.assertIn('place_name', response.context)
+
+    def test_date_in_context(self):
+        response = self.client.get(self.url)
+        self.assertIn('date', response.context)
+
+    def test_sports_grounds_in_context(self):
+        response = self.client.get(self.url)
+        self.assertIn('sports_grounds', response.context)
+
+    def test_new_reservation_form_in_context(self):
+        response = self.client.get(self.url)
+        self.assertIn('new_reservation_form', response.context)
+
+    def test_incorrect_date_in_url_raise_404(self):
+        url_with_incorrect_date = '/' + self.place_name + '/2016/02/31'
+        response = self.client.get(url_with_incorrect_date)
+        self.assertEqual(response.status_code, 404)
+
+    def test_event_date_is_added_to_saved_form(self):
+        create_sports_grounds(self.place, quantity=1)
+        sports_ground = self.place.sports_grounds.get()
+        form_data = {
+            'sports_ground': sports_ground.pk,
+            'start_time': sports_ground.opening_time,
+            'end_time': sports_ground.closing_time,
+            'email': 'mejl@mail.com',
+            'surname': 'Bananowy',
+        }
+        response = self.client.post(self.url, form_data)
+        new_reservation = sports_ground.reservations.get()
+        self.assertTrue(hasattr(new_reservation, 'event_date'))

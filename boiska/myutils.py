@@ -49,11 +49,11 @@ def create_place(place_name='Poznań Rataje', place_administrator=None):
     return Place.objects.create(**place_args)
 
 
-def create_reservations(sports_ground, number_of_reservations=10, date=None):
+def create_reservations(sports_ground, quantity=10, date=None):
     if date == None:
         now = datetime.datetime.now()
         date = now.date()
-    for _ in range(number_of_reservations):
+    for _ in range(quantity):
         start_time = datetime.datetime.combine(
             datetime.datetime.now(),
             sports_ground.opening_time
@@ -78,8 +78,8 @@ def create_reservations(sports_ground, number_of_reservations=10, date=None):
         )
 
 
-def create_sports_grounds(place, number_of_sports_grounds=3):
-    for _ in range(number_of_sports_grounds):
+def create_sports_grounds(place, quantity=3):
+    for _ in range(quantity):
         place.sports_grounds.create(
             opening_time=datetime.time(8),
             closing_time=datetime.time(20)

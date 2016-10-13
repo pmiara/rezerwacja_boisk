@@ -3,7 +3,7 @@
 {% block content %}
     <p>Strona główna</p>
     <ul id="places">
-        {% for place in places %}
+        {% for place in place_list %}
         <li>
             <h3>
                 <a href="{% url 'boiska:place' place.name %}">

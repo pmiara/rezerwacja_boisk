@@ -1,4 +1,5 @@
 from django.shortcuts import render, get_object_or_404, redirect
+from django.views.generic import ListView
 from django.views import View
 from django.http import Http404
 
@@ -11,14 +12,12 @@ from .forms import (NewReservationForm, ManageReservationsForm,
 from .myutils import reservation_overlap
 
 
-class IndexView(View):
+class IndexView(ListView):
     """
     Main page of the site. List of all locations.
     """
-    def get(self, request):
-        places = Place.objects.all()
-        context = {'places': places}
-        return render(request, 'boiska/index.html', context)
+    model = Place
+    template_name = 'boiska/index.html'
 
 
 class PlaceView(View):
@@ -117,17 +116,23 @@ class PlaceDayView(View):
     """
     def get(self, request, place_name, year, month, day):
         self.initial_settings(place_name, year, month, day)
+        self.prepare_context()
+        if not self.is_date_valid():
+            raise Http404
         new_reservation_form = NewReservationForm(self.place)
         self.context['new_reservation_form'] = new_reservation_form
         return render(request, 'boiska/place_day.html', self.context)
 
     def post(self, request, place_name, year, month, day):
         self.initial_settings(place_name, year, month, day)
+        self.prepare_context()
+        if not self.is_date_valid():
+            raise Http404
         self.context['result_message'] = None
         new_reservation_form = NewReservationForm(data=request.POST)
         if new_reservation_form.is_valid():
             reservation = new_reservation_form.save(commit=False)
-            reservation.event_date = datetime.date(int(year), int(month), int(day))
+            reservation.event_date = datetime.date(self.year, self.month, self.day)
             reservation.save()
             self.context['result_message'] = 'Twoja rezerwacja czeka na akceptację.'
         else:
@@ -137,19 +142,25 @@ class PlaceDayView(View):
 
     def initial_settings(self, place_name, year, month, day):
         self.place_name = place_name
-        self.year = year
-        self.month = month
-        self.day = day
+        self.year = int(year)
+        self.month = int(month)
+        self.day = int(day)
         self.place = get_object_or_404(Place, name=self.place_name)
         self.sports_grounds = self.place.sports_grounds.all()
-        self.prepare_context()
 
     def prepare_context(self):
         self.context = {
             'place_name': self.place_name,
-            'date': '/'.join((self.year, self.month, self.day)),
+            'date': str(self.year) + '/' + str(self.month) + '/' + str(self.day),
             'sports_grounds': self.sports_grounds,
         }
+
+    def is_date_valid(self):
+        try:
+            datetime.date(self.year, self.month, self.day)
+            return True
+        except:
+            return False
 
 
 def place_admin(request, place_name):
