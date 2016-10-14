@@ -2,13 +2,15 @@ from django.test import TestCase
 from django.core.urlresolvers import resolve
 from django.contrib.auth.models import User
 
+import datetime
+
 import boiska.views as views
 from .models import Place, Reservation
 from .myutils import create_user, create_place, create_sports_grounds, create_reservations
 from .forms import NewReservationForm
 
 
-class BaseViewTest:
+class BasicViewTest:
 
     def test_url_resolves_to_correct_view(self):
         resolver_match = resolve(self.url)
@@ -24,7 +26,7 @@ class BaseViewTest:
         self.assertTemplateUsed(response, 'boiska/base.html')
 
 
-class IndexViewTest(TestCase, BaseViewTest):
+class IndexViewTest(TestCase, BasicViewTest):
 
     def setUp(self):
         self.url = '/'
@@ -36,17 +38,88 @@ class IndexViewTest(TestCase, BaseViewTest):
         self.assertIn('place_list', response.context)
 
 
-class PlaceViewTest(TestCase, BaseViewTest):
+class PlaceViewTest(TestCase, BasicViewTest):
 
     def setUp(self):
-        place_name = 'Kórnik OSIR'
-        new_place = create_place(place_name=place_name)
-        self.url = '/' + place_name
+        self.place_name = 'Kórnik OSIR'
+        self.place = create_place(place_name=self.place_name)
+        self.EMPTY = views.PlaceView.EMPTY
+        self.BUSY = views.PlaceView.BUSY
+        self.VERY_BUSY = views.PlaceView.VERY_BUSY
+        self.url = '/' + self.place_name
         self.expected_view_name = 'boiska:place'
         self.expected_template = 'boiska/place.html'
 
+    def test_year_and_month_in_context(self):
+        response = self.client.get(self.url)
+        self.assertIn('year', response.context)
+        self.assertIn('month', response.context)
 
-class PlaceAdminViewTest(TestCase, BaseViewTest):
+    def test_place_in_context(self):
+        response = self.client.get(self.url)
+        self.assertIn('place', response.context)
+
+    def test_calendar_in_context(self):
+        response = self.client.get(self.url)
+        self.assertIn('calendar', response.context)
+
+    def test_default_year_and_month(self):
+        response = self.client.get(self.url)
+        today = datetime.datetime.today()
+        expected_year = today.year
+        expected_month = today.month
+        self.assertEqual(response.context['year'], expected_year)
+        self.assertEqual(response.context['month'], expected_month)
+
+    def test_incorrect_month_in_url_raises_404(self):
+        url_with_incorrect_month = self.url + '/2016/13'
+        response = self.client.get(url_with_incorrect_month)
+        self.assertEqual(response.status_code, 404)
+
+    def test_calendar_has_days_with_availability(self):
+        response = self.client.get(self.url)
+        calendar = response.context['calendar']
+        for week in calendar:
+            for day in week:
+                if day['month_day'] == 0:
+                    self.assertEqual(day['availability'], None)
+                else:
+                    self.assertIn(
+                        day['availability'],
+                        [self.EMPTY, self.BUSY, self.VERY_BUSY]
+                    )
+
+    def test_availability_when_there_are_no_reservations(self):
+        response = self.client.get(self.url)
+        calendar = response.context['calendar']
+        for week in calendar:
+            for day in week:
+                if day['month_day'] == 0:
+                    self.assertEqual(day['availability'], None)
+                else:
+                    self.assertEqual(day['availability'], self.EMPTY)
+
+    def test_availability_when_every_hour_is_busy(self):
+        create_sports_grounds(self.place, quantity=1)
+        sports_ground = self.place.sports_grounds.get()
+        today = datetime.datetime.today()
+        sports_ground.reservations.create(
+            start_time = sports_ground.opening_time,
+            end_time = sports_ground.closing_time,
+            event_date = today,
+            email = 'poprawny@strona.pl',
+            surname = 'Testowy',
+            is_accepted = True,
+        )
+        response = self.client.get(self.url)
+        calendar = response.context['calendar']
+        for week in calendar:
+            for day in week:
+                if day['month_day'] == today.day:
+                    self.assertEqual(day['availability'], self.VERY_BUSY)
+
+
+class PlaceAdminViewTest(TestCase, BasicViewTest):
 
     def setUp(self):
         place_name = 'Ośrodek Przywodny Rataje'
@@ -74,7 +147,7 @@ class PlaceAdminViewTest(TestCase, BaseViewTest):
         self.assertEqual(len(reservations_in_context), len(actual_reservations))
 
 
-class PlaceDayViewTest(TestCase, BaseViewTest):
+class PlaceDayViewTest(TestCase, BasicViewTest):
 
     def setUp(self):
         self.place_name = 'Wejcherowo'
@@ -99,7 +172,7 @@ class PlaceDayViewTest(TestCase, BaseViewTest):
         response = self.client.get(self.url)
         self.assertIn('new_reservation_form', response.context)
 
-    def test_incorrect_date_in_url_raise_404(self):
+    def test_incorrect_date_in_url_raises_404(self):
         url_with_incorrect_date = '/' + self.place_name + '/2016/02/31'
         response = self.client.get(url_with_incorrect_date)
         self.assertEqual(response.status_code, 404)
