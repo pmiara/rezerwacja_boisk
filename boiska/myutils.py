@@ -7,30 +7,6 @@ import datetime
 from .models import Place, Reservation, SportsGround
 
 
-def reservation_overlap(reservation):
-    """
-    Check if a reservation can be accepted. If addition of a new reservation
-    causes an overlap, it can't be aaccepted.
-    Return values:
-     - True: there is an overlap
-     - False: there isn't
-    """
-    event_date = reservation.event_date
-    accepted_reservations = Reservation.objects.filter(
-        sports_ground=reservation.sports_ground,
-        event_date=event_date,
-        is_accepted=True
-    )
-    for accepted_reservation in accepted_reservations:
-        start_a = accepted_reservation.start_time
-        end_a = accepted_reservation.end_time
-        start_b = reservation.start_time
-        end_b = reservation.end_time
-        if start_a < end_b and start_b < end_a:
-            return True
-    return False
-
-
 def create_user(username='ExampleMan', password='qwerty123'):
     return User.objects.create(username=username, password=password)
 

@@ -9,7 +9,6 @@ from calendar import Calendar
 from .models import Place, Reservation
 from .forms import (NewReservationForm, ManageReservationsForm,
     EditReservationForm, EditPlaceForm)
-from .myutils import reservation_overlap
 
 
 class IndexView(ListView):
@@ -153,6 +152,8 @@ class PlaceDayView(View):
             'place_name': self.place_name,
             'date': str(self.year) + '/' + str(self.month) + '/' + str(self.day),
             'sports_grounds': self.sports_grounds,
+            'new_reservation_form': None,
+            'result_message': None,
         }
 
     def is_date_valid(self):
@@ -163,58 +164,97 @@ class PlaceDayView(View):
             return False
 
 
-def place_admin(request, place_name):
+class PlaceAdminView(View):
     """
     Administrative panel for a Place administrator.
-    Administrator of a Place can do following actions:
-     - accept reservations
-     - delete not_accepted reservations
-     - edit reservations
     """
-    place = get_object_or_404(Place, name=place_name)
-    sports_grounds = place.sports_grounds.all()
-    result_messages = []
-    if request.method == 'POST':
+
+    def get(self, request, place_name):
+        self.initial_settings(place_name)
+        self.prepare_context()
+        self.prepare_reservations_not_accepted()
+        manage_reservations_form = ManageReservationsForm(self.place)
+        self.context['manage_reservations_form'] = manage_reservations_form
+        return render(request, 'boiska/place_admin.html', self.context)
+
+    def post(self, request, place_name):
+        self.initial_settings(place_name)
+        self.prepare_context()
+        self.prepare_reservations_not_accepted()
         manage_reservations_form = ManageReservationsForm(
-            place,
+            self.place,
             data=request.POST
         )
         if manage_reservations_form.is_valid():
             reservations_ids = request.POST.getlist('reservations')
             reservations = Reservation.objects.filter(
-                sports_ground__in=sports_grounds,
+                sports_ground__in=self.sports_grounds,
                 id__in=reservations_ids
             )
             action = int(request.POST['action'])
-            for reservation in reservations:
-                if action == Reservation.ACCEPT:
-                    overlap = reservation_overlap(reservation)
-                    if overlap == False:
-                        reservation.is_accepted = True
-                        reservation.save()
-                        result_messages.append(
-                            'Zaakceptowano: ' + str(reservation)
-                        )
-                    else:
-                        result_messages.append(
-                            'Rezerwacja nachodzi na inną: ' + str(reservation)
-                        )
-                elif action == Reservation.DELETE:
-                    reservation.delete()
-                    result_messages.append('Usunięto: ' + str(reservation))
-    not_accepted = []
-    for sports_ground in sports_grounds:
-        for reservation in sports_ground.reservations.filter(is_accepted=False):
-            not_accepted.append(reservation)
-    manage_reservations_form = ManageReservationsForm(place)
-    context = {
-        'place': place,
-        'sports_grounds': sports_grounds,
-        'reservations_not_accepted': not_accepted,
-        'manage_reservations_form': manage_reservations_form,
-        'result_messages': result_messages,
-    }
-    return render(request, 'boiska/place_admin.html', context)
+            self.apply_action_to_selected_reservations(reservations, action)
+        return render(request, 'boiska/place_admin.html', self.context)
+
+    def initial_settings(self, place_name):
+        self.place = get_object_or_404(Place, name=place_name)
+        self.sports_grounds = self.place.sports_grounds.all()
+
+    def prepare_context(self):
+        self.context = {
+            'place': self.place,
+            'sports_grounds': self.sports_grounds,
+            'reservations_not_accepted': None,
+            'manage_reservations_form': None,
+            'result_messages': None,
+        }
+
+    def prepare_reservations_not_accepted(self):
+        reservations_not_accepted = []
+        for sports_ground in self.sports_grounds:
+            for reservation in sports_ground.reservations.filter(is_accepted=False):
+                reservations_not_accepted.append(reservation)
+        self.context['reservations_not_accepted'] = reservations_not_accepted
+
+    def apply_action_to_selected_reservations(self, reservations, action):
+        result_messages = []
+        for reservation in reservations:
+            if action == Reservation.ACCEPT:
+                overlap = self.reservation_overlap(reservation)
+                if overlap == False:
+                    reservation.is_accepted = True
+                    reservation.save()
+                    result_messages.append(
+                        'Zaakceptowano: ' + str(reservation)
+                    )
+                else:
+                    result_messages.append(
+                        'Rezerwacja nachodzi na inną: ' + str(reservation)
+                    )
+            elif action == Reservation.DELETE:
+                reservation.delete()
+                result_messages.append('Usunięto: ' + str(reservation))
+        self.context['result_messages'] = result_messages
+
+    def reservation_overlap(self, reservation):
+        """
+        Check if a reservation can be accepted. If addition of a new reservation
+        causes an overlap, it can't be aaccepted.
+        """
+        event_date = reservation.event_date
+        accepted_reservations = Reservation.objects.filter(
+            sports_ground=reservation.sports_ground,
+            event_date=event_date,
+            is_accepted=True
+        )
+        lower_bound_a = reservation.start_time
+        upper_bound_a = reservation.end_time
+        for accepted_reservation in accepted_reservations:
+            lower_bound_b = accepted_reservation.start_time
+            upper_bound_b = accepted_reservation.end_time
+            if lower_bound_a < upper_bound_b and lower_bound_b < upper_bound_a:
+                return True
+        return False
+
 
 def edit_reservation(request, place_name, reservation_id):
     """

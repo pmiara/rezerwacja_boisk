@@ -25,7 +25,7 @@ urlpatterns = [
     ),
     url(r'(?P<place_name>[\w ]+)/'
         r'admin$',
-        views.place_admin,
+        views.PlaceAdminView.as_view(),
         name='place_admin'
     ),
     url(r'(?P<place_name>[\w ]+)/'
