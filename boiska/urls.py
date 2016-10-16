@@ -31,12 +31,12 @@ urlpatterns = [
     url(r'(?P<place_name>[\w ]+)/'
         r'admin/edit_reservation/'
         r'(?P<reservation_id>\d+)$',
-        views.edit_reservation,
+        views.EditReservationView.as_view(),
         name='edit_reservation'
     ),
     url(r'(?P<place_name>[\w ]+)/'
         r'admin/edit_place$',
-        views.edit_place,
+        views.EditPlaceView.as_view(),
         name='edit_place'
     ),
 ]

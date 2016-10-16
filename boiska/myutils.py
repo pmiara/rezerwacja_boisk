@@ -24,6 +24,11 @@ def create_place(place_name='Poznań Rataje', place_administrator=None):
     }
     return Place.objects.create(**place_args)
 
+def create_reservation(sports_ground, date=None):
+    list_of_reservations = create_reservations(
+        sports_ground=sports_ground, quantity=1, date=date
+    )
+    return list_of_reservations[0]
 
 def create_reservations(sports_ground, quantity=10, date=None):
     if date == None:
@@ -55,10 +60,11 @@ def create_reservations(sports_ground, quantity=10, date=None):
                 is_accepted=False
             )
         )
-    if quantity == 1:
-        return new_reservations[0]
     return new_reservations
 
+def create_sports_ground(place):
+    list_of_sports_grounds = create_sports_grounds(place=place, quantity=1)
+    return list_of_sports_grounds[0]
 
 def create_sports_grounds(place, quantity=3):
     new_sports_grounds = []
@@ -69,6 +75,4 @@ def create_sports_grounds(place, quantity=3):
                 closing_time=datetime.time(20)
             )
         )
-    if quantity == 1:
-        return new_sports_grounds[0]
     return new_sports_grounds

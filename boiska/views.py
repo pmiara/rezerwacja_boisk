@@ -256,45 +256,65 @@ class PlaceAdminView(View):
         return False
 
 
-def edit_reservation(request, place_name, reservation_id):
+class EditReservationView(View):
     """
     Edition of reservations for a Place administrator.
     """
-    reservation = Reservation.objects.get(id=reservation_id)
-    place = reservation.sports_ground.place
-    edit_reservation_form = EditReservationForm(
-        instance=reservation,
-        place=place
-    )
-    if request.method == 'POST':
-        edit_reservation_form = EditReservationForm(
-            instance=reservation,
-            data=request.POST,
-            place=place
-        )
-        if edit_reservation_form.is_valid():
-            edit_reservation_form.save()
-            return redirect('boiska:place_admin', place_name)
-    context = {
-        'edit_reservation_form': edit_reservation_form,
-        'place_name': place_name,
-        'reservation': reservation,
-    }
-    return render(request, 'boiska/edit_reservation.html', context)
 
-def edit_place(request, place_name):
-    """
-    Edition of place.
-    """
-    place = Place.objects.get(name=place_name)
-    edit_place_form = EditPlaceForm(instance=place)
-    if request.method == 'POST':
+    def get(self, request, place_name, reservation_id):
+        self.initial_settings(place_name, reservation_id)
+        self.edit_reservation_form = EditReservationForm(
+            instance=self.reservation,
+            place=self.place
+        )
+        self.prepare_context()
+        return render(request, 'boiska/edit_reservation.html', self.context)
+
+    def post(self, request, place_name, reservation_id):
+        self.initial_settings(place_name, reservation_id)
+        self.edit_reservation_form = EditReservationForm(
+            instance=self.reservation,
+            place=self.place,
+            data=request.POST
+        )
+        self.prepare_context()
+        if self.edit_reservation_form.is_valid():
+            self.edit_reservation_form.save()
+            return redirect('boiska:place_admin', place_name)
+        return render(request, 'boiska/edit_reservation.html', self.context)
+
+    def initial_settings(self, place_name, reservation_id):
+        self.reservation = Reservation.objects.get(id=reservation_id)
+        self.place = self.reservation.sports_ground.place
+        self.place_name = place_name
+
+    def prepare_context(self):
+        self.context = {
+            'edit_reservation_form': self.edit_reservation_form,
+            'place_name': self.place_name,
+            'reservation': self.reservation,
+        }
+
+
+class EditPlaceView(View):
+
+    def get(self, request, place_name):
+        place = Place.objects.get(name=place_name)
+        edit_place_form = EditPlaceForm(instance=place)
+        context = {
+            'edit_place_form': edit_place_form,
+            'place_name': place_name,
+        }
+        return render(request, 'boiska/edit_place.html', context)
+
+    def post(self, request, place_name):
+        place = Place.objects.get(name=place_name)
         edit_place_form = EditPlaceForm(instance=place, data=request.POST)
         if edit_place_form.is_valid():
             edit_place_form.save()
             return redirect('boiska:place_admin', place_name)
-    context = {
-        'edit_place_form': edit_place_form,
-        'place_name': place_name,
-    }
-    return render(request, 'boiska/edit_place.html', context)
+        context = {
+            'edit_place_form': edit_place_form,
+            'place_name': place_name,
+        }
+        return render(request, 'boiska/edit_place.html', context)
