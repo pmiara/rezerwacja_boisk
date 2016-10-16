@@ -29,6 +29,7 @@ def create_reservations(sports_ground, quantity=10, date=None):
     if date == None:
         now = datetime.datetime.now()
         date = now.date()
+    new_reservations = []
     for _ in range(quantity):
         start_time = datetime.datetime.combine(
             datetime.datetime.now(),
@@ -44,19 +45,30 @@ def create_reservations(sports_ground, quantity=10, date=None):
         duration = datetime.timedelta(hours=randint(1, 3))
         end_time += duration
 
-        sports_ground.reservations.create(
-            surname='Surname',
-            email='mail@site.com',
-            event_date=date,
-            start_time=start_time,
-            end_time=end_time,
-            is_accepted=False
+        new_reservations.append(
+            sports_ground.reservations.create(
+                surname='Surname',
+                email='mail@site.com',
+                event_date=date,
+                start_time=start_time,
+                end_time=end_time,
+                is_accepted=False
+            )
         )
+    if quantity == 1:
+        return new_reservations[0]
+    return new_reservations
 
 
 def create_sports_grounds(place, quantity=3):
+    new_sports_grounds = []
     for _ in range(quantity):
-        place.sports_grounds.create(
-            opening_time=datetime.time(8),
-            closing_time=datetime.time(20)
+        new_sports_grounds.append(
+            place.sports_grounds.create(
+                opening_time=datetime.time(8),
+                closing_time=datetime.time(20)
+            )
         )
+    if quantity == 1:
+        return new_sports_grounds[0]
+    return new_sports_grounds
