@@ -13,13 +13,13 @@
     <table>
         <tr>
             <td>
-                <a href="{% url 'boiska:place' place.name year month|add:-1 %}">&lt;</a>
+                <a href="{{ previous_month_url }}">&lt;</a>
             </td>
             <th colspan="5">
                 {{ month|polish_month_name }}
             </th>
             <td>
-                <a href="{% url 'boiska:place' place.name year month|add:1 %}">&gt;</a>
+                <a href="{{ next_month_url }}">&gt;</a>
             </td>
         </tr>
         {% for week in calendar %}

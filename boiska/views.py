@@ -2,6 +2,7 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.views.generic import ListView
 from django.views import View
 from django.http import Http404
+from django.urls import reverse
 
 import datetime
 from calendar import Calendar
@@ -31,15 +32,19 @@ class PlaceView(View):
 
     def get(self, request, place_name, year=None, month=None):
         self.place = get_object_or_404(Place, name=place_name)
+        self.place_name = place_name
         self.year = year
         self.month = month
         self.prepare_and_check_year_month()
+        self.prepare_next_and_previous_month_urls()
         my_calendar = self.availability_calendar()
         context = {
             'place': self.place,
             'calendar': my_calendar,
             'year': self.year,
             'month': self.month,
+            'previous_month_url': self.previous_month_url,
+            'next_month_url': self.next_month_url,
         }
         return render(request, 'boiska/place.html', context)
 
@@ -55,6 +60,30 @@ class PlaceView(View):
             self.month = int(self.month)
         if self.month < 1 or self.month > 12:
             raise Http404
+
+    def prepare_next_and_previous_month_urls(self):
+        previous_month = {
+            'year': self.year,
+            'month': self.month - 1
+        }
+        next_month = {
+            'year': self.year,
+            'month': self.month + 1
+        }
+        if previous_month['month'] == 0:
+            previous_month['month'] = 12
+            previous_month['year'] = self.year - 1
+        if next_month['month'] == 13:
+            next_month['month'] = 1
+            next_month['year'] = self.year + 1
+        self.previous_month_url = reverse(
+            'boiska:place',
+            args=[self.place_name, previous_month['year'], previous_month['month']]
+        )
+        self.next_month_url = reverse(
+            'boiska:place',
+            args=[self.place_name, next_month['year'], next_month['month']]
+        )
 
     def availability_calendar(self):
         """
