@@ -30,6 +30,8 @@ class PlaceView(View):
     BUSY = 1
     VERY_BUSY = 2
 
+    template_name = 'boiska/place.html'
+
     def get(self, request, place_name, year=None, month=None):
         self.place = get_object_or_404(Place, name=place_name)
         self.place_name = place_name
@@ -46,7 +48,7 @@ class PlaceView(View):
             'previous_month_url': self.previous_month_url,
             'next_month_url': self.next_month_url,
         }
-        return render(request, 'boiska/place.html', context)
+        return render(request, self.template_name, context)
 
     def prepare_and_check_year_month(self):
         now = datetime.datetime.now()
@@ -142,6 +144,9 @@ class PlaceDayView(View):
     User can do a reservation using ReservationForm. Date and sports_ground
     fields are added automatically to the form after validation.
     """
+
+    template_name = 'boiska/place_day.html'
+
     def get(self, request, place_name, year, month, day):
         self.initial_settings(place_name, year, month, day)
         self.prepare_context()
@@ -149,7 +154,7 @@ class PlaceDayView(View):
             raise Http404
         new_reservation_form = NewReservationForm(self.place)
         self.context['new_reservation_form'] = new_reservation_form
-        return render(request, 'boiska/place_day.html', self.context)
+        return render(request, self.template_name, self.context)
 
     def post(self, request, place_name, year, month, day):
         self.initial_settings(place_name, year, month, day)
@@ -166,7 +171,7 @@ class PlaceDayView(View):
         else:
             self.context['result_message'] = 'Twoja rezerwacja zawiera błędy.'
         self.context['new_reservation_form'] = new_reservation_form
-        return render(request, 'boiska/place_day.html', self.context)
+        return render(request, self.template_name, self.context)
 
     def initial_settings(self, place_name, year, month, day):
         self.place_name = place_name
@@ -198,13 +203,15 @@ class PlaceAdminView(View):
     Administrative panel for a Place administrator.
     """
 
+    template_name = 'boiska/place_admin.html'
+
     def get(self, request, place_name):
         self.initial_settings(place_name)
         self.prepare_context()
         self.prepare_reservations_not_accepted()
         manage_reservations_form = ManageReservationsForm(self.place)
         self.context['manage_reservations_form'] = manage_reservations_form
-        return render(request, 'boiska/place_admin.html', self.context)
+        return render(request, self.template_name, self.context)
 
     def post(self, request, place_name):
         self.initial_settings(place_name)
@@ -222,7 +229,7 @@ class PlaceAdminView(View):
             )
             action = int(request.POST['action'])
             self.apply_action_to_selected_reservations(reservations, action)
-        return render(request, 'boiska/place_admin.html', self.context)
+        return render(request, self.template_name, self.context)
 
     def initial_settings(self, place_name):
         self.place = get_object_or_404(Place, name=place_name)
@@ -290,6 +297,8 @@ class EditReservationView(View):
     Edition of reservations for a Place administrator.
     """
 
+    template_name = 'boiska/edit_reservation.html'
+
     def get(self, request, place_name, reservation_id):
         self.initial_settings(place_name, reservation_id)
         self.edit_reservation_form = EditReservationForm(
@@ -297,7 +306,7 @@ class EditReservationView(View):
             place=self.place
         )
         self.prepare_context()
-        return render(request, 'boiska/edit_reservation.html', self.context)
+        return render(request, self.template_name, self.context)
 
     def post(self, request, place_name, reservation_id):
         self.initial_settings(place_name, reservation_id)
@@ -310,7 +319,7 @@ class EditReservationView(View):
         if self.edit_reservation_form.is_valid():
             self.edit_reservation_form.save()
             return redirect('boiska:place_admin', place_name)
-        return render(request, 'boiska/edit_reservation.html', self.context)
+        return render(request, self.template_name, self.context)
 
     def initial_settings(self, place_name, reservation_id):
         self.reservation = Reservation.objects.get(id=reservation_id)
@@ -327,6 +336,8 @@ class EditReservationView(View):
 
 class EditPlaceView(View):
 
+    template_name = 'boiska/edit_place.html'
+
     def get(self, request, place_name):
         place = Place.objects.get(name=place_name)
         edit_place_form = EditPlaceForm(instance=place)
@@ -334,7 +345,7 @@ class EditPlaceView(View):
             'edit_place_form': edit_place_form,
             'place_name': place_name,
         }
-        return render(request, 'boiska/edit_place.html', context)
+        return render(request, self.template_name, context)
 
     def post(self, request, place_name):
         place = Place.objects.get(name=place_name)
@@ -346,4 +357,4 @@ class EditPlaceView(View):
             'edit_place_form': edit_place_form,
             'place_name': place_name,
         }
-        return render(request, 'boiska/edit_place.html', context)
+        return render(request, self.template_name, context)
